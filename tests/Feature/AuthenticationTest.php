@@ -27,7 +27,8 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        // Tras iniciar sesión, Fortify redirige a la home configurada (config/fortify.php).
+        $response->assertRedirect(config('fortify.home'));
     }
 
     public function test_users_can_not_authenticate_with_invalid_password(): void

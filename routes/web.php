@@ -7,16 +7,11 @@ use Illuminate\Support\Facades\Route;
 });
  */
 
-/* se redirije a la vista y ruta admin*/
-Route::redirect('/', '/admin');
+// Página pública de bienvenida (entrada principal al portal).
+Route::get('/', function () {
+    return view('welcome');
+})->name('welcome');
 
-Route::middleware([
-    'auth:sanctum',
-    config('jetstream.auth_session'),
-    'verified',
-])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
-});
+// Compatibilidad con enlaces de Jetstream (route('dashboard')) → panel admin.
+Route::redirect('/dashboard', '/admin')->name('dashboard');
 

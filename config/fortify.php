@@ -162,7 +162,7 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        // Features::registration(), // deshabilitado: sistema interno, usuarios gestionados por Super Admin
         Features::resetPasswords(),
         // Features::emailVerification(),
         Features::updateProfileInformation(),

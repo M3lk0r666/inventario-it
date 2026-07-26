@@ -2,24 +2,29 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
+/**
+ * Seeder por defecto (php artisan db:seed).
+ *
+ * Ejecuta según el entorno:
+ *  - Producción → solo datos base (ProductionSeeder).
+ *  - Desarrollo → base + datos de prueba (DemoSeeder).
+ *
+ * También puedes elegir explícitamente cuál correr:
+ *  - php artisan db:seed --class=ProductionSeeder   (solo base, sin empleados ni pruebas)
+ *  - php artisan db:seed --class=DemoSeeder          (solo datos de prueba; requiere base ya sembrada)
+ */
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        if (app()->environment('production')) {
+            // Producción: solo datos base (sin empleados ni datos de prueba).
+            $this->call(ProductionSeeder::class);
+        } else {
+            // Desarrollo: DemoSeeder ya asegura la base + agrega datos de prueba.
+            $this->call(DemoSeeder::class);
+        }
     }
 }

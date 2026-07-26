@@ -10,10 +10,12 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     use HasApiTokens;
+    use HasRoles;
 
     /** @use HasFactory<UserFactory> */
     use HasFactory;
@@ -31,6 +33,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_protected',
     ];
 
     /**
@@ -64,6 +67,13 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_protected' => 'boolean',
         ];
+    }
+
+    /** Expediente de empleado ligado a esta cuenta (opcional). */
+    public function employee(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Employee::class);
     }
 }

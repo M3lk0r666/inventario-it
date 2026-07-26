@@ -8,12 +8,13 @@ use Tests\TestCase;
 class ExampleTest extends TestCase
 {
     /**
-     * A basic test example.
+     * La página pública de bienvenida carga correctamente.
      */
-    public function test_the_application_returns_a_successful_response(): void
+    public function test_the_welcome_page_loads(): void
     {
         $response = $this->get('/');
 
-        $response->assertStatus(200);
+        $response->assertOk();
+        $response->assertSee('Inventario TI', false);
     }
 }

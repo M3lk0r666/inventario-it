@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AssetTrack Pro - Administración de Licencias</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed-variant": "#0040a2",
+                    "secondary-container": "#709bfe",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-container": "#a33500",
+                    "surface-container-low": "#f3f3fd",
+                    "on-surface-variant": "#434654",
+                    "on-error": "#ffffff",
+                    "inverse-surface": "#2e3038",
+                    "on-secondary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#0c56d0",
+                    "outline-variant": "#c3c6d6",
+                    "primary-container": "#0052cc",
+                    "on-surface": "#191b23",
+                    "on-primary-fixed": "#001848",
+                    "surface": "#faf8ff",
+                    "error-container": "#ffdad6",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-highest": "#e1e2ec",
+                    "background": "#faf8ff",
+                    "on-background": "#191b23",
+                    "tertiary": "#7b2600",
+                    "on-tertiary-container": "#ffc6b2",
+                    "on-error-container": "#93000a",
+                    "surface-dim": "#d9d9e4",
+                    "on-tertiary-fixed-variant": "#812800",
+                    "primary": "#003d9b",
+                    "inverse-on-surface": "#f0f0fb",
+                    "inverse-primary": "#b2c5ff",
+                    "primary-fixed-dim": "#b2c5ff",
+                    "outline": "#737685",
+                    "tertiary-fixed": "#ffdbcf",
+                    "on-secondary-fixed-variant": "#00419d",
+                    "on-secondary-container": "#003179",
+                    "secondary": "#285ab9",
+                    "error": "#ba1a1a",
+                    "on-primary-container": "#c4d2ff",
+                    "surface-container": "#ededf8",
+                    "surface-bright": "#faf8ff",
+                    "on-secondary-fixed": "#001946",
+                    "tertiary-fixed-dim": "#ffb59b",
+                    "surface-container-high": "#e7e7f2",
+                    "surface-variant": "#e1e2ec"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-sm": "8px",
+                    "gutter": "16px",
+                    "container-padding": "24px",
+                    "unit": "4px",
+                    "stack-md": "16px",
+                    "table-cell-padding": "12px"
+            },
+            "fontFamily": {
+                    "display-lg": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "title-md": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "mono-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "display-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "title-md": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "mono-sm": ["13px", {"lineHeight": "18px", "letterSpacing": "0.02em", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c3c6d6; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #737685; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-64 bg-white border-r border-outline-variant flex flex-col py-stack-md z-50">
+<div class="px-6 mb-8">
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary">AssetTrack Pro</h1>
+<p class="text-[11px] text-on-surface-variant font-medium tracking-wider uppercase">Enterprise Inventory</p>
+</div>
+<div class="flex-1 space-y-1">
+<a class="flex items-center px-6 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined mr-3">dashboard</span> Dashboard
+            </a>
+<a class="flex items-center px-6 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined mr-3">devices</span> Devices
+            </a>
+<a class="flex items-center px-6 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined mr-3">groups</span> Employees
+            </a>
+<!-- Active Navigation -->
+<a class="flex items-center px-6 py-3 border-l-4 border-primary bg-surface-container-low text-primary font-bold font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined mr-3" style="font-variation-settings: 'FILL' 1;">verified_user</span> Licenses
+            </a>
+<a class="flex items-center px-6 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined mr-3">admin_panel_settings</span> Admin
+            </a>
+<a class="flex items-center px-6 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined mr-3">settings</span> Settings
+            </a>
+</div>
+<div class="px-6 pt-stack-md border-t border-outline-variant mt-auto">
+<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-surface-container-low cursor-pointer">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-white font-bold text-xs">JD</div>
+<div>
+<p class="text-on-surface font-label-md text-label-md">Juan Delgado</p>
+<p class="text-on-surface-variant text-[10px]">Administrador IT</p>
+</div>
+</div>
+</div>
+</nav>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 left-64 h-16 bg-white border-b border-outline-variant flex items-center justify-between px-container-padding z-40">
+<div class="flex items-center flex-1">
+<div class="relative w-96">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary text-body-sm font-body-sm" placeholder="Buscar licencias, versiones o software..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-stack-md">
+<button class="relative p-2 rounded-full hover:bg-surface-container-low text-on-surface-variant transition-colors active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-white"></span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container-low text-on-surface-variant transition-colors active:scale-95">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<button class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-label-md text-label-md active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-sm">add</span>
+                Nueva Licencia
+            </button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="pl-64 pt-16 min-h-screen">
+<div class="p-container-padding space-y-stack-md max-w-[1440px] mx-auto">
+<!-- Page Header -->
+<div class="flex items-end justify-between mb-6">
+<div>
+<h2 class="font-display-lg text-display-lg text-on-surface">Gestión de Licencias</h2>
+<p class="text-on-surface-variant font-body-md text-body-md mt-1">Supervisión y asignación de activos de software corporativos.</p>
+</div>
+<div class="flex gap-2">
+<button class="px-4 py-2 border border-outline text-primary rounded-lg font-label-md text-label-md hover:bg-surface-container-low transition-colors">
+                        Exportar Reporte
+                    </button>
+</div>
+</div>
+<!-- Dashboard Overview (Bento Style) -->
+<div class="grid grid-cols-12 gap-gutter mb-8">
+<div class="col-span-12 md:col-span-4 bg-white border border-outline-variant p-stack-md rounded-xl flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+</div>
+<div>
+<p class="text-on-surface-variant font-label-md text-label-md">Total Licencias</p>
+<h3 class="font-headline-md text-headline-md text-on-surface">1,284</h3>
+</div>
+</div>
+<div class="col-span-12 md:col-span-4 bg-white border border-outline-variant p-stack-md rounded-xl flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-error-container/20 flex items-center justify-center text-error">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div>
+<p class="text-on-surface-variant font-label-md text-label-md">Por Expirar (30 días)</p>
+<h3 class="font-headline-md text-headline-md text-error">12</h3>
+</div>
+</div>
+<div class="col-span-12 md:col-span-4 bg-white border border-outline-variant p-stack-md rounded-xl flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-secondary-container/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">pie_chart</span>
+</div>
+<div>
+<p class="text-on-surface-variant font-label-md text-label-md">Tasa de Uso</p>
+<h3 class="font-headline-md text-headline-md text-on-surface">84.2%</h3>
+</div>
+</div>
+</div>
+<!-- Table Container -->
+<div class="bg-white border border-outline-variant rounded-xl overflow-hidden">
+<div class="p-container-padding border-b border-outline-variant flex items-center justify-between">
+<h3 class="font-title-md text-title-md text-on-surface">Inventario de Software</h3>
+<div class="flex gap-stack-sm">
+<select class="border-outline-variant rounded-lg font-body-sm text-body-sm focus:ring-primary focus:border-primary">
+<option>Todos los tipos</option>
+<option>Suscripción</option>
+<option>Perpetua</option>
+</select>
+<button class="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-low text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-lowest border-b border-outline-variant">
+<tr>
+<th class="px-container-padding py-table-cell-padding font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Software</th>
+<th class="px-container-padding py-table-cell-padding font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Versión</th>
+<th class="px-container-padding py-table-cell-padding font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Tipo</th>
+<th class="px-container-padding py-table-cell-padding font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Expiración</th>
+<th class="px-container-padding py-table-cell-padding font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Disponible</th>
+<th class="px-container-padding py-table-cell-padding font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-right">Acción</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant font-body-md text-body-md">
+<!-- Row 1: Alert Critical -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-container-padding py-table-cell-padding">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-on-primary-fixed-variant/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-lg">code</span>
+</div>
+<span class="font-bold">JetBrains IntelliJ IDEA</span>
+</div>
+</td>
+<td class="px-container-padding py-table-cell-padding">2023.3 Pro</td>
+<td class="px-container-padding py-table-cell-padding">Suscripción Anual</td>
+<td class="px-container-padding py-table-cell-padding">
+<div class="flex items-center gap-2 text-error font-bold">
+<span class="material-symbols-outlined text-sm">event_busy</span>
+                                        15 Oct 2024
+                                        <span class="px-2 py-0.5 bg-error-container text-error text-[10px] rounded-full uppercase tracking-tighter">Próximo</span>
+</div>
+</td>
+<td class="px-container-padding py-table-cell-padding">
+<div class="flex flex-col gap-1 w-24">
+<div class="flex justify-between text-[11px] font-bold">
+<span>2/45</span>
+<span>4%</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-error w-[96%]"></div>
+</div>
+</div>
+</td>
+<td class="px-container-padding py-table-cell-padding text-right">
+<button class="px-3 py-1.5 bg-primary text-white text-xs rounded hover:opacity-90 active:scale-95 transition-all">Asignar</button>
+</td>
+</tr>
+<!-- Row 2: Standard -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-container-padding py-table-cell-padding">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-on-primary-fixed-variant/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-lg">design_services</span>
+</div>
+<span class="font-bold">Adobe Creative Cloud</span>
+</div>
+</td>
+<td class="px-container-padding py-table-cell-padding">2024 Suite</td>
+<td class="px-container-padding py-table-cell-padding">Enterprise License</td>
+<td class="px-container-padding py-table-cell-padding">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">calendar_today</span>
+                                        12 Mar 2025
+                                    </div>
+</td>
+<td class="px-container-padding py-table-cell-padding">
+<div class="flex flex-col gap-1 w-24">
+<div class="flex justify-between text-[11px] font-bold">
+<span>15/120</span>
+<span>87%</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[13%]"></div>
+</div>
+</div>
+</td>
+<td class="px-container-padding py-table-cell-padding text-right">
+<button class="px-3 py-1.5 bg-primary text-white text-xs rounded hover:opacity-90 active:scale-95 transition-all">Asignar</button>
+</td>
+</tr>
+<!-- Row 3: Warning -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-container-padding py-table-cell-padding">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-on-primary-fixed-variant/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-lg">article</span>
+</div>
+<span class="font-bold">Microsoft 365 E5</span>
+</div>
+</td>
+<td class="px-container-padding py-table-cell-padding">Office v24</td>
+<td class="px-container-padding py-table-cell-padding">Subscription</td>
+<td class="px-container-padding py-table-cell-padding">
+<div class="flex items-center gap-2 text-tertiary font-bold">
+<span class="material-symbols-outlined text-sm">update</span>
+                                        04 Nov 2024
+                                    </div>
+</td>
+<td class="px-container-padding py-table-cell-padding">
+<div class="flex flex-col gap-1 w-24">
+<div class="flex justify-between text-[11px] font-bold">
+<span>84/500</span>
+<span>83%</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[83%]"></div>
+</div>
+</div>
+</td>
+<td class="px-container-padding py-table-cell-padding text-right">
+<button class="px-3 py-1.5 bg-primary text-white text-xs rounded hover:opacity-90 active:scale-95 transition-all">Asignar</button>
+</td>
+</tr>
+<!-- Row 4: Perpetua -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-container-padding py-table-cell-padding">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-on-primary-fixed-variant/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-lg">database</span>
+</div>
+<span class="font-bold">Tableau Desktop</span>
+</div>
+</td>
+<td class="px-container-padding py-table-cell-padding">2023.2</td>
+<td class="px-container-padding py-table-cell-padding">Perpetua</td>
+<td class="px-container-padding py-table-cell-padding">
+<div class="flex items-center gap-2 text-on-surface-variant/50">
+<span class="material-symbols-outlined text-sm">salinity</span>
+                                        N/A
+                                    </div>
+</td>
+<td class="px-container-padding py-table-cell-padding">
+<div class="flex flex-col gap-1 w-24">
+<div class="flex justify-between text-[11px] font-bold">
+<span>5/10</span>
+<span>50%</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[50%]"></div>
+</div>
+</div>
+</td>
+<td class="px-container-padding py-table-cell-padding text-right">
+<button class="px-3 py-1.5 bg-primary text-white text-xs rounded hover:opacity-90 active:scale-95 transition-all">Asignar</button>
+</td>
+</tr>
+<!-- Row 5: Low Inventory -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-container-padding py-table-cell-padding">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-on-primary-fixed-variant/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-lg">terminal</span>
+</div>
+<span class="font-bold">VMware Workstation</span>
+</div>
+</td>
+<td class="px-container-padding py-table-cell-padding">17 Pro</td>
+<td class="px-container-padding py-table-cell-padding">OEM</td>
+<td class="px-container-padding py-table-cell-padding">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">calendar_today</span>
+                                        01 Ene 2026
+                                    </div>
+</td>
+<td class="px-container-padding py-table-cell-padding">
+<div class="flex flex-col gap-1 w-24">
+<div class="flex justify-between text-[11px] font-bold">
+<span>0/25</span>
+<span>0%</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-outline-variant w-0"></div>
+</div>
+</div>
+</td>
+<td class="px-container-padding py-table-cell-padding text-right">
+<button class="px-3 py-1.5 bg-outline-variant text-on-surface-variant text-xs rounded cursor-not-allowed" disabled="">Agotado</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-container-padding border-t border-outline-variant flex items-center justify-between">
+<p class="text-body-sm font-body-sm text-on-surface-variant">Mostrando 5 de 48 licencias registradas</p>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded border border-outline-variant hover:bg-surface-container-low transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<span class="px-4 py-1.5 bg-primary-container text-white rounded font-label-md text-label-md">1</span>
+<button class="p-2 rounded border border-outline-variant hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Modal: Asignar Licencia (Simple Mockup for visual purposes) -->
+<div class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-on-background/40 backdrop-blur-sm" id="assignModal">
+<div class="bg-white rounded-xl shadow-xl w-full max-w-md border border-outline-variant">
+<div class="p-6 border-b border-outline-variant flex justify-between items-center">
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Asignar Licencia</h4>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors" onclick="toggleModal()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="p-6 space-y-stack-md">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Software Seleccionado</label>
+<div class="p-3 bg-surface-container-low rounded-lg font-body-md text-body-md font-bold">JetBrains IntelliJ IDEA - 2023.3 Pro</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Seleccionar Empleado</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">person_search</span>
+<input class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-body-sm" placeholder="Nombre, email o ID..." type="text"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Fecha de Inicio</label>
+<input class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-body-sm" type="date"/>
+</div>
+<div class="pt-4 flex gap-stack-sm">
+<button class="flex-1 px-4 py-2 border border-outline text-on-surface-variant rounded-lg font-label-md text-label-md hover:bg-surface-container-low transition-colors" onclick="toggleModal()">Cancelar</button>
+<button class="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all">Confirmar Asignación</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+        function toggleModal() {
+            const modal = document.getElementById('assignModal');
+            modal.classList.toggle('hidden');
+        }
+
+        // Attach modal triggers to buttons
+        document.querySelectorAll('button').forEach(btn => {
+            if(btn.innerText === 'Asignar') {
+                btn.onclick = toggleModal;
+            }
+        });
+
+        // Background atmosphere micro-interaction
+        document.addEventListener('mousemove', (e) => {
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+            // Subtle shift for a premium feel if we had any gradient backgrounds
+        });
+    </script>
+</body></html>

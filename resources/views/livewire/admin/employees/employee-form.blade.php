@@ -1,0 +1,116 @@
+<div>
+    <x-slide-over model="open" :title="$editingId ? 'Editar empleado' : 'Nuevo empleado'" width="max-w-xl">
+        <form wire:submit="save" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label">Número de empleado <span class="text-error">*</span></label>
+                    <input type="text" wire:model="data.employee_number" class="form-input font-mono">
+                    @error('data.employee_number') <p class="form-error">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label class="form-label">Estado <span class="text-error">*</span></label>
+                    <select wire:model="data.status" class="form-input">
+                        <option value="active">Activo</option>
+                        <option value="inactive">Inactivo</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="form-label">Nombre completo <span class="text-error">*</span></label>
+                <input type="text" wire:model="data.name" class="form-input">
+                @error('data.name') <p class="form-error">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label">Puesto</label>
+                    <input type="text" wire:model="data.position" class="form-input">
+                </div>
+                <div>
+                    <label class="form-label">Departamento</label>
+                    <div class="flex items-center gap-2">
+                        <select wire:model="data.department_id" class="form-input flex-1">
+                            <option value="">— Sin departamento —</option>
+                            @foreach ($departments as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        @can('catalogs.create')
+                            <button type="button" class="shrink-0 p-2 text-primary-container border border-primary-container/40 hover:bg-primary-fixed/40 rounded-lg"
+                                onclick="Livewire.dispatch('open-quick-create', { catalog: 'departamentos' })" title="Agregar departamento">
+                                <i class="ri-add-line"></i>
+                            </button>
+                        @endcan
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label">Ubicación</label>
+                    <div class="flex items-center gap-2">
+                        <select wire:model="data.location_id" class="form-input flex-1">
+                            <option value="">— Sin ubicación —</option>
+                            @foreach ($locations as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        @can('catalogs.create')
+                            <button type="button" class="shrink-0 p-2 text-primary-container border border-primary-container/40 hover:bg-primary-fixed/40 rounded-lg"
+                                onclick="Livewire.dispatch('open-quick-create', { catalog: 'ubicaciones' })" title="Agregar ubicación">
+                                <i class="ri-add-line"></i>
+                            </button>
+                        @endcan
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">Teléfono</label>
+                    <input type="text" wire:model="data.phone" class="form-input">
+                </div>
+            </div>
+
+            <div>
+                <label class="form-label">Correo</label>
+                <input type="email" wire:model="data.email" class="form-input">
+                @error('data.email') <p class="form-error">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+                <label class="form-label">Cuenta de acceso al sistema (opcional)</label>
+                <select wire:model="data.user_id" class="form-input">
+                    <option value="">— Sin cuenta —</option>
+                    @foreach ($users as $value => $label)
+                        <option value="{{ $value }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+                <p class="form-help">Vincula este empleado con un usuario del portal, si aplica.</p>
+                @error('data.user_id') <p class="form-error">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+                <label class="form-label">Notas</label>
+                <textarea wire:model="data.notes" rows="2" class="form-input"></textarea>
+            </div>
+
+            <div class="flex justify-end gap-2 border-t border-border-soft pt-4">
+                <button type="button" class="btn-ghost" wire:click="$set('open', false)">Cancelar</button>
+                <button type="submit" class="btn-primary" wire:loading.attr="disabled" wire:target="save">Guardar</button>
+            </div>
+        </form>
+    </x-slide-over>
+
+    @if ($confirmingDeleteId)
+        <div class="fixed inset-0 z-[60] flex items-center justify-center">
+            <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="cancelDelete"></div>
+            <div class="relative bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-border-soft w-full max-w-md mx-4 p-6">
+                <h3 class="text-title-md text-on-surface">Eliminar empleado</h3>
+                <p class="mt-1 text-body-md text-on-surface-variant">¿Eliminar <span class="font-semibold text-on-surface">{{ $confirmingDeleteLabel }}</span>? Se conserva el histórico (borrado lógico).</p>
+                <div class="mt-5 flex justify-end gap-2">
+                    <button type="button" class="btn-ghost" wire:click="cancelDelete">Cancelar</button>
+                    <button type="button" class="btn-danger" wire:click="delete" wire:loading.attr="disabled">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    @endif
+</div>

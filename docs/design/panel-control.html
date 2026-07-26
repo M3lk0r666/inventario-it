@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AssetTrack Pro - Dashboard de Control de Bienes</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed-variant": "#0040a2",
+                    "secondary-container": "#709bfe",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-container": "#a33500",
+                    "surface-container-low": "#f3f3fd",
+                    "on-surface-variant": "#434654",
+                    "on-error": "#ffffff",
+                    "inverse-surface": "#2e3038",
+                    "on-secondary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#0c56d0",
+                    "outline-variant": "#c3c6d6",
+                    "primary-container": "#0052cc",
+                    "on-surface": "#191b23",
+                    "on-primary-fixed": "#001848",
+                    "surface": "#faf8ff",
+                    "error-container": "#ffdad6",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-highest": "#e1e2ec",
+                    "background": "#faf8ff",
+                    "on-tertiary-fixed": "#380d00",
+                    "secondary-fixed-dim": "#b1c6ff",
+                    "primary-fixed": "#dae2ff",
+                    "secondary-fixed": "#d9e2ff",
+                    "on-background": "#191b23",
+                    "tertiary": "#7b2600",
+                    "on-tertiary-container": "#ffc6b2",
+                    "on-error-container": "#93000a",
+                    "surface-dim": "#d9d9e4",
+                    "on-tertiary-fixed-variant": "#812800",
+                    "primary": "#003d9b",
+                    "inverse-on-surface": "#f0f0fb",
+                    "inverse-primary": "#b2c5ff",
+                    "primary-fixed-dim": "#b2c5ff",
+                    "outline": "#737685",
+                    "tertiary-fixed": "#ffdbcf",
+                    "on-secondary-fixed-variant": "#00419d",
+                    "on-secondary-container": "#003179",
+                    "secondary": "#285ab9",
+                    "error": "#ba1a1a",
+                    "on-primary-container": "#c4d2ff",
+                    "surface-container": "#ededf8",
+                    "surface-bright": "#faf8ff",
+                    "on-secondary-fixed": "#001946",
+                    "tertiary-fixed-dim": "#ffb59b",
+                    "surface-container-high": "#e7e7f2",
+                    "surface-variant": "#e1e2ec"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-sm": "8px",
+                    "gutter": "16px",
+                    "container-padding": "24px",
+                    "unit": "4px",
+                    "stack-md": "16px",
+                    "table-cell-padding": "12px"
+            },
+            "fontFamily": {
+                    "display-lg": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "title-md": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "mono-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "display-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "title-md": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "mono-sm": ["13px", {"lineHeight": "18px", "letterSpacing": "0.02em", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #F4F5F7; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .sidebar-active {
+            border-left: 4px solid #0052cc;
+            background-color: #f3f3fd;
+            color: #003d9b;
+            font-weight: 700;
+        }
+        /* Custom scrollbar for data tables */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #DFE1E6; border-radius: 10px; }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- Side Navigation Bar -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-white border-r border-outline-variant flex flex-col py-stack-md z-50">
+<div class="px-container-padding mb-8">
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary">AssetTrack Pro</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Enterprise Inventory</p>
+</div>
+<nav class="flex-1 space-y-unit">
+<!-- Dashboard is Active -->
+<a class="flex items-center px-container-padding py-3 transition-colors duration-200 sidebar-active cursor-pointer" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="dashboard">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<a class="flex items-center px-container-padding py-3 text-on-surface-variant hover:bg-surface-container-lowest transition-colors duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="devices">devices</span>
+<span class="font-body-md text-body-md">Devices</span>
+</a>
+<a class="flex items-center px-container-padding py-3 text-on-surface-variant hover:bg-surface-container-lowest transition-colors duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="groups">groups</span>
+<span class="font-body-md text-body-md">Employees</span>
+</a>
+<a class="flex items-center px-container-padding py-3 text-on-surface-variant hover:bg-surface-container-lowest transition-colors duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="verified_user">verified_user</span>
+<span class="font-body-md text-body-md">Licenses</span>
+</a>
+<a class="flex items-center px-container-padding py-3 text-on-surface-variant hover:bg-surface-container-lowest transition-colors duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="admin_panel_settings">admin_panel_settings</span>
+<span class="font-body-md text-body-md">Admin</span>
+</a>
+<a class="flex items-center px-container-padding py-3 text-on-surface-variant hover:bg-surface-container-lowest transition-colors duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="settings">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+</nav>
+<div class="px-container-padding mt-auto">
+<div class="flex items-center p-3 rounded-lg bg-surface-container-low">
+<img class="w-10 h-10 rounded-full object-cover mr-3" data-alt="A professional corporate logo for an enterprise asset management software, featuring a clean, minimalist geometric icon in shades of deep corporate blue and slate gray. The logo communicates stability, precision, and systematic order, fitting for a financial or operations-focused application. The background is a crisp, clean white." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeizWXND1rdqVaAHbYSzG0Q8LQNn2hqlqZCs4t-QDJP8lJuRTnhe1Vif4ilCfW9m7JHd-OLVq9PEcy-Bv8ZHV8J5DPum9bMmeizpG0bmFVFk4ZoTWjkAysQTbsJqDd2VPvsC3OS72mWPHExFt49TcRnmG4SmGvFJJ8OxolIfCNfDIjZVlvqzT0prQDWVqLSBuF3ZWqtyP_j2n8VJ2RdArSAh89fEk5fkZ5sUxK2UiMzqmcblABD3kPqQ"/>
+<div class="overflow-hidden">
+<p class="font-label-md text-label-md font-bold truncate">Global Corp HQ</p>
+<p class="text-[10px] text-on-surface-variant">Admin Plan</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 right-0 left-64 h-16 bg-white border-b border-outline-variant flex items-center justify-between px-container-padding z-40">
+<div class="flex items-center bg-surface-container-low rounded-lg px-3 py-1.5 w-96">
+<span class="material-symbols-outlined text-outline mr-2" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-sm w-full p-0" placeholder="Buscar activos, licencias o empleados..." type="text"/>
+</div>
+<div class="flex items-center space-x-6">
+<button class="relative text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:scale-95">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute -top-1 -right-1 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:scale-95">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant"></div>
+<div class="flex items-center cursor-pointer group">
+<div class="text-right mr-3">
+<p class="font-label-md text-label-md text-on-surface">Javier Morales</p>
+<p class="text-[11px] text-on-surface-variant">Gestor de Activos</p>
+</div>
+<img class="w-10 h-10 rounded-full border border-outline-variant group-hover:border-primary transition-colors" data-alt="A professional headshot of a Hispanic male corporate operations manager in his 40s, wearing a modern business-casual navy blazer. The lighting is bright and clear, set against a soft-focus office background. The overall aesthetic is professional, reliable, and corporate, matching the AssetTrack Pro brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnasxbyTR4KB8BsYLLJpohzM7XiIwpbvvumP1JuQQYZfqnqw-XOlBwL_keHN4q3atkPtr0dSpRVdkL4_eonHMVgY7lXCvwynrrPUXw5Dp57Yi-OmtTU81UWXTPBkoTkxLN6joD63xdOKGkR8VQ30EM_z1VSdf7igO6dXSitGpZkaCG2stCeH3bs8td-cWKAH4oy_e_8tNaN95p6q6c8b_CHcuIycRfcaW0r7EbyPGLAUt3k7VmHTJUqg"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 mt-16 p-container-padding min-h-screen">
+<div class="max-w-[1440px] mx-auto">
+<!-- Header Section -->
+<div class="flex items-center justify-between mb-8">
+<div>
+<h2 class="font-display-lg text-display-lg text-primary">Panel de Control Principal</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Resumen del estado actual de los recursos corporativos.</p>
+</div>
+<div class="flex gap-stack-sm">
+<button class="flex items-center px-4 py-2 border border-primary text-primary font-label-md text-label-md rounded-lg hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined mr-2 text-[18px]" data-icon="file_download">file_download</span>
+                        Exportar Reporte
+                    </button>
+<button class="flex items-center px-4 py-2 bg-primary-container text-white font-label-md text-label-md rounded-lg hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined mr-2 text-[18px]" data-icon="add">add</span>
+                        Nuevo Activo
+                    </button>
+</div>
+</div>
+<!-- Bento Metrics Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-gutter mb-gutter">
+<!-- Metric Card 1 -->
+<div class="bg-white p-6 border border-outline-variant rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-primary-fixed rounded-lg text-primary">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+</div>
+<span class="text-[12px] font-bold text-[#10B981] flex items-center bg-[#10B981]/10 px-2 py-0.5 rounded-full">
+                            +12% <span class="material-symbols-outlined text-[14px] ml-0.5" data-icon="trending_up">trending_up</span>
+</span>
+</div>
+<div class="mt-4">
+<p class="font-label-md text-label-md text-on-surface-variant">Total Activos</p>
+<p class="font-display-lg text-display-lg mt-1">2,845</p>
+</div>
+</div>
+<!-- Metric Card 2 -->
+<div class="bg-white p-6 border border-outline-variant rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-secondary-container rounded-lg text-on-secondary">
+<span class="material-symbols-outlined" data-icon="badge">badge</span>
+</div>
+<span class="text-[12px] font-bold text-on-surface-variant flex items-center bg-surface-container px-2 py-0.5 rounded-full">
+                            Estable
+                        </span>
+</div>
+<div class="mt-4">
+<p class="font-label-md text-label-md text-on-surface-variant">Empleados Activos</p>
+<p class="font-display-lg text-display-lg mt-1">412</p>
+</div>
+</div>
+<!-- Metric Card 3 -->
+<div class="bg-white p-6 border border-outline-variant rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-tertiary-fixed-dim rounded-lg text-tertiary">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+</div>
+<span class="text-[12px] font-bold text-error flex items-center bg-error-container/30 px-2 py-0.5 rounded-full">
+                            Crítico
+                        </span>
+</div>
+<div class="mt-4">
+<p class="font-label-md text-label-md text-on-surface-variant">Licencias por Vencer</p>
+<p class="font-display-lg text-display-lg mt-1">18</p>
+</div>
+</div>
+<!-- Ad Card / Quick Action -->
+<div class="bg-primary-container p-6 rounded-xl relative overflow-hidden text-white flex flex-col justify-center">
+<div class="relative z-10">
+<p class="font-headline-sm text-headline-sm mb-2">Auditoría Q3</p>
+<p class="text-[13px] opacity-90 mb-4">La próxima revisión de inventario comienza en 4 días.</p>
+<button class="bg-white text-primary font-label-md text-label-md px-4 py-2 rounded-lg hover:bg-opacity-90 transition-all">
+                            Ver Agenda
+                        </button>
+</div>
+<div class="absolute -bottom-6 -right-6 opacity-20">
+<span class="material-symbols-outlined text-[120px]" data-icon="analytics">analytics</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Distribution Chart (Visualization) -->
+<div class="lg:col-span-5 bg-white border border-outline-variant rounded-xl p-6">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-title-md text-title-md">Distribución de Dispositivos</h3>
+<button class="text-on-surface-variant hover:text-primary">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+<div class="flex flex-col items-center">
+<!-- Custom visual representation for chart -->
+<div class="relative w-48 h-48 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<circle class="stroke-surface-container" cx="18" cy="18" fill="none" r="16" stroke-width="4"></circle>
+<circle class="stroke-primary" cx="18" cy="18" fill="none" r="16" stroke-dasharray="45, 100" stroke-width="4"></circle>
+<circle class="stroke-secondary" cx="18" cy="18" fill="none" r="16" stroke-dasharray="30, 100" stroke-dashoffset="-45" stroke-width="4"></circle>
+<circle class="stroke-tertiary" cx="18" cy="18" fill="none" r="16" stroke-dasharray="15, 100" stroke-dashoffset="-75" stroke-width="4"></circle>
+<circle class="stroke-[#10B981]" cx="18" cy="18" fill="none" r="16" stroke-dasharray="10, 100" stroke-dashoffset="-90" stroke-width="4"></circle>
+</svg>
+<div class="absolute text-center">
+<p class="font-display-lg text-display-lg">2.8k</p>
+<p class="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold">Totales</p>
+</div>
+</div>
+<div class="w-full mt-8 grid grid-cols-2 gap-4">
+<div class="flex items-center">
+<div class="w-3 h-3 rounded-full bg-primary mr-2"></div>
+<div class="flex-1">
+<p class="text-[12px] text-on-surface-variant">Laptops</p>
+<p class="font-label-md text-label-md">1,280 (45%)</p>
+</div>
+</div>
+<div class="flex items-center">
+<div class="w-3 h-3 rounded-full bg-secondary mr-2"></div>
+<div class="flex-1">
+<p class="text-[12px] text-on-surface-variant">Monitores</p>
+<p class="font-label-md text-label-md">850 (30%)</p>
+</div>
+</div>
+<div class="flex items-center">
+<div class="w-3 h-3 rounded-full bg-tertiary mr-2"></div>
+<div class="flex-1">
+<p class="text-[12px] text-on-surface-variant">Periféricos</p>
+<p class="font-label-md text-label-md">420 (15%)</p>
+</div>
+</div>
+<div class="flex items-center">
+<div class="w-3 h-3 rounded-full bg-[#10B981] mr-2"></div>
+<div class="flex-1">
+<p class="text-[12px] text-on-surface-variant">Servidores</p>
+<p class="font-label-md text-label-md">285 (10%)</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Assignments Table -->
+<div class="lg:col-span-7 bg-white border border-outline-variant rounded-xl overflow-hidden flex flex-col">
+<div class="p-6 flex items-center justify-between border-b border-outline-variant">
+<h3 class="font-title-md text-title-md">Asignaciones Recientes</h3>
+<a class="text-primary font-label-md text-label-md hover:underline" href="#">Ver todo</a>
+</div>
+<div class="flex-1 overflow-x-auto custom-scrollbar">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low border-b border-outline-variant">
+<tr>
+<th class="p-table-cell-padding font-label-md text-label-md text-on-surface-variant">Empleado</th>
+<th class="p-table-cell-padding font-label-md text-label-md text-on-surface-variant">Activo</th>
+<th class="p-table-cell-padding font-label-md text-label-md text-on-surface-variant">Fecha</th>
+<th class="p-table-cell-padding font-label-md text-label-md text-on-surface-variant">Estado</th>
+<th class="p-table-cell-padding"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="p-table-cell-padding">
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center mr-3 font-bold text-primary text-[11px]">
+                                                SR
+                                            </div>
+<div>
+<p class="font-body-md text-body-md font-semibold">Sofía Reyes</p>
+<p class="text-[11px] text-on-surface-variant">Marketing</p>
+</div>
+</div>
+</td>
+<td class="p-table-cell-padding">
+<p class="font-body-sm text-body-sm">MacBook Pro M2 (ID: 0042)</p>
+</td>
+<td class="p-table-cell-padding">
+<p class="font-body-sm text-body-sm">Hoy, 10:45 AM</p>
+</td>
+<td class="p-table-cell-padding">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#10B981]/10 text-[#10B981]">
+                                            Entregado
+                                        </span>
+</td>
+<td class="p-table-cell-padding text-right">
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="open_in_new">open_in_new</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="p-table-cell-padding">
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center mr-3 font-bold text-primary text-[11px]">
+                                                DG
+                                            </div>
+<div>
+<p class="font-body-md text-body-md font-semibold">Daniel García</p>
+<p class="text-[11px] text-on-surface-variant">Ingeniería</p>
+</div>
+</div>
+</td>
+<td class="p-table-cell-padding">
+<p class="font-body-sm text-body-sm">Dell XPS 15 (ID: 1093)</p>
+</td>
+<td class="p-table-cell-padding">
+<p class="font-body-sm text-body-sm">Ayer, 03:20 PM</p>
+</td>
+<td class="p-table-cell-padding">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-secondary/10 text-secondary">
+                                            Pendiente
+                                        </span>
+</td>
+<td class="p-table-cell-padding text-right">
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="open_in_new">open_in_new</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="p-table-cell-padding">
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center mr-3 font-bold text-primary text-[11px]">
+                                                AL
+                                            </div>
+<div>
+<p class="font-body-md text-body-md font-semibold">Ana López</p>
+<p class="text-[11px] text-on-surface-variant">Ventas</p>
+</div>
+</div>
+</td>
+<td class="p-table-cell-padding">
+<p class="font-body-sm text-body-sm">iPad Air 5th Gen (ID: 0821)</p>
+</td>
+<td class="p-table-cell-padding">
+<p class="font-body-sm text-body-sm">12 Oct, 2023</p>
+</td>
+<td class="p-table-cell-padding">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#10B981]/10 text-[#10B981]">
+                                            Entregado
+                                        </span>
+</td>
+<td class="p-table-cell-padding text-right">
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="open_in_new">open_in_new</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="p-table-cell-padding">
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center mr-3 font-bold text-primary text-[11px]">
+                                                MT
+                                            </div>
+<div>
+<p class="font-body-md text-body-md font-semibold">Marco Torres</p>
+<p class="text-[11px] text-on-surface-variant">RH</p>
+</div>
+</div>
+</td>
+<td class="p-table-cell-padding">
+<p class="font-body-sm text-body-sm">Licencia Creative Cloud</p>
+</td>
+<td class="p-table-cell-padding">
+<p class="font-body-sm text-body-sm">11 Oct, 2023</p>
+</td>
+<td class="p-table-cell-padding">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-error/10 text-error">
+                                            Fallido
+                                        </span>
+</td>
+<td class="p-table-cell-padding text-right">
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="open_in_new">open_in_new</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Bottom Section (Active Alerts / Licenses) -->
+<div class="mt-gutter grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<div class="bg-white p-6 border border-outline-variant rounded-xl">
+<div class="flex items-center mb-4 text-tertiary">
+<span class="material-symbols-outlined mr-2" data-icon="history">history</span>
+<h4 class="font-title-md text-title-md">Historial de Cambios</h4>
+</div>
+<ul class="space-y-4">
+<li class="flex gap-3">
+<div class="min-w-[4px] bg-primary rounded-full"></div>
+<div>
+<p class="text-[13px] font-semibold">Inventario Actualizado</p>
+<p class="text-[11px] text-on-surface-variant">Por Administrador (Hace 2h)</p>
+</div>
+</li>
+<li class="flex gap-3">
+<div class="min-w-[4px] bg-secondary rounded-full"></div>
+<div>
+<p class="text-[13px] font-semibold">15 Nuevos Activos Importados</p>
+<p class="text-[11px] text-on-surface-variant">Archivo CSV (Hace 5h)</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="bg-white p-6 border border-outline-variant rounded-xl lg:col-span-2">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center text-primary">
+<span class="material-symbols-outlined mr-2" data-icon="verified">verified</span>
+<h4 class="font-title-md text-title-md">Licencias por Vencer</h4>
+</div>
+<button class="text-primary font-label-md text-label-md">Renovar todas</button>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="p-4 border border-outline-variant rounded-lg bg-surface-container-low flex justify-between items-center">
+<div>
+<p class="font-body-md text-body-md font-bold">Microsoft 365 E5</p>
+<p class="text-[12px] text-on-surface-variant">24 Usuarios • Vence en 8 días</p>
+</div>
+<button class="bg-error-container text-on-error-container p-2 rounded-full">
+<span class="material-symbols-outlined text-[18px]" data-icon="refresh">refresh</span>
+</button>
+</div>
+<div class="p-4 border border-outline-variant rounded-lg bg-surface-container-low flex justify-between items-center">
+<div>
+<p class="font-body-md text-body-md font-bold">Zoom Pro Fleet</p>
+<p class="text-[12px] text-on-surface-variant">10 Hosts • Vence en 15 días</p>
+</div>
+<button class="bg-primary-container text-white p-2 rounded-full">
+<span class="material-symbols-outlined text-[18px]" data-icon="history">history</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Button (Only for main screens) -->
+<button class="fixed bottom-8 right-8 w-14 h-14 bg-primary-container text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center z-50">
+<span class="material-symbols-outlined text-[28px]" data-icon="add_box">add_box</span>
+</button>
+<script>
+        // Simple micro-interaction for sidebar collapse on small screens (simulated logic)
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('AssetTrack Pro Dashboard Initialized');
+            
+            // Add subtle interaction effect to cards
+            const cards = document.querySelectorAll('.bg-white.rounded-xl');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    card.style.transform = 'translateY(-2px)';
+                    card.style.transition = 'transform 0.2s ease-out';
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
+</body></html>
