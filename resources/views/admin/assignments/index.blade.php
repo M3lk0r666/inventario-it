@@ -4,12 +4,12 @@
         <x-slot name="actions">
             @can('assignments.edit')
                 <button type="button" class="btn-ghost" onclick="Livewire.dispatch('open-reception-form')">
-                    <i class="ri-inbox-archive-line"></i> Recepción (salida)
+                    <i class="ri-logout-box-line"></i> Recepción (salida del colaborador)
                 </button>
             @endcan
             @can('assignments.create')
                 <button type="button" class="btn-primary" onclick="Livewire.dispatch('open-assignment-form', { assetId: null })">
-                    <i class="ri-user-received-line"></i> Nueva asignación
+                    <i class="ri-user-received-line"></i> Nueva asignación (al colaborador)
                 </button>
             @endcan
         </x-slot>

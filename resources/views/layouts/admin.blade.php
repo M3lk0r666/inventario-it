@@ -57,7 +57,7 @@
     <livewire:shared.catalog-quick-create />
 
     {{-- Notificaciones tipo toast --}}
-    <div x-data="toastManager" class="fixed bottom-4 right-4 z-[100] space-y-2 w-80" x-cloak>
+    <div x-data="toastManager" class="fixed top-20 right-4 z-[100] space-y-2 w-80" x-cloak>
         <template x-for="t in toasts" :key="t.id">
             <div class="flex items-start gap-2 p-3 rounded-lg shadow-lg text-sm text-white"
                 :class="t.type === 'error' ? 'bg-red-600' : 'bg-gray-900'"

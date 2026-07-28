@@ -1,5 +1,5 @@
 <div>
-    <x-slide-over model="open" title="Nueva asignación de bienes" width="max-w-xl">
+    <x-slide-over model="open" title="Nueva asignación de bienes (entrega al colaborador)" width="max-w-xl">
         <form wire:submit="save" class="space-y-4">
             <div>
                 <label class="form-label">Empleado <span class="text-error">*</span></label>

@@ -46,7 +46,7 @@
             </td>
             <td style="width: 42%">
                 <div class="doc-title">
-                    {{ $isReturn ? 'RECEPCIÓN DE ACTIVOS' : 'CARTA RESPONSIVA DE ENTREGA DE BIENES' }}
+                    {{ mb_strtoupper($docTitle ?? ($isReturn ? 'Carta de Entrega de Bienes' : 'Carta de Aceptación de Bienes')) }}
                 </div>
                 <div class="folio">Folio: <strong>{{ $letter->folio }}</strong></div>
                 <div class="folio">Fecha: {{ $letter->issued_at?->format('d/M/Y') }}</div>

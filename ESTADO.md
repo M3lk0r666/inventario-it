@@ -94,6 +94,15 @@ Aclaración contraseñas: `user:password` es para el **arranque inicial** (aún 
 - **`DemoSeeder`**: datos de prueba (empleados/activos/asignaciones…); ahora **asegura la base** llamando a `ProductionSeeder` al inicio (idempotente), así se puede correr solo con `--class=DemoSeeder`.
 - **`DatabaseSeeder`** (por defecto): en producción → `ProductionSeeder`; fuera → `DemoSeeder`. Se puede elegir explícitamente cualquiera con `--class`.
 
+### Ajuste — folios/cartas por tipo (feedback de Alberto, 2026-07-22)
+Configuración → Cartas dividida en dos secciones con **prefijo, folio inicial y texto propios por tipo**:
+- **CAB — Carta de Aceptación de Bienes** = tipo `delivery` (empleado recibe). Prefijo default `CAB`, texto de aceptación (1ª persona).
+- **CEB — Carta de Entrega de Bienes** = tipo `return` (empleado devuelve/egresa). Prefijo default `CEB`, texto de entrega/custodia.
+Settings: `letter_delivery_prefix/start/text`, `letter_return_prefix/start/text` (reemplazan `letter_folio_prefix/next_number/intro_text`). Textos default en `ResponsiveLetterService::DEFAULT_TEXT` (fuente única; usados por SettingSeeder, ConfigManager y PDF). Título del PDF y texto por tipo.
+**Folio consecutivo blindado (punto 3):** `nextFolio($type)` DERIVA el número del **máximo folio existente para ese prefijo+año + 1** (incluye eliminados) → siempre consecutivo, nunca sobrescribe ni depende de un contador manual. El "folio inicial" solo aplica cuando aún no hay folios de ese prefijo+año; al guardar en Configuración se **clampea** para no quedar por debajo de lo ya emitido (evita huecos/duplicados). Cambiar de prefijo inicia una secuencia nueva por prefijo.
+Mapeo confirmado por Alberto: **CAB = entrada** (colaborador recibe), **CEB = salida** (colaborador entrega los bienes al responsable del área/almacén al egresar). Textos legales redactados acordes en `DEFAULT_TEXT`. Botones de Asignaciones: "Nueva asignación (al colaborador)" y "Recepción (salida del colaborador)"; títulos de modales alineados.
+**Marcadores en textos de carta:** los textos admiten `{colaborador}`, `{no_empleado}`, `{puesto}`, `{departamento}`, `{empresa}`, `{fecha}`, `{folio}` (constante `ResponsiveLetterService::PLACEHOLDERS`), reemplazados con los datos reales al generar el PDF (`renderPlaceholders`). Configuración muestra la lista de marcadores disponibles.
+
 ## Fases completadas
 
 - **FASE 0 — Fundaciones** (2026-07-18): auditoría del proyecto base y correcciones. Validada por Alberto (incluyó fix de topbar/sidebar con marca duplicada).

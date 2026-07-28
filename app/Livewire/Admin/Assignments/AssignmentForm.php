@@ -126,7 +126,7 @@ class AssignmentForm extends Component
 
             if ($generateLetter) {
                 $letter = ResponsiveLetter::create([
-                    'folio' => $letters->nextFolio(),
+                    'folio' => $letters->nextFolio('delivery'),
                     'type' => 'delivery',
                     'employee_id' => $this->employeeId,
                     'issued_at' => $this->assignedAt,

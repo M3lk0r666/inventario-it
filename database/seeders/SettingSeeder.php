@@ -14,12 +14,20 @@ class SettingSeeder extends Seeder
 {
     public function run(): void
     {
+        $cabText = \App\Services\ResponsiveLetterService::DEFAULT_TEXT['delivery'];
+        $cebText = \App\Services\ResponsiveLetterService::DEFAULT_TEXT['return'];
+
         $defaults = [
             'company_name' => config('app.name'),
             'company_logo' => 'company-logo-default.png',
-            'letter_folio_prefix' => 'CR',
-            'letter_next_number' => '1',
-            'letter_intro_text' => 'Por medio de la presente hago constar que recibo de conformidad los bienes descritos a continuación, comprometiéndome a su buen uso, resguardo y devolución en las mismas condiciones.',
+            // Carta de Aceptación de Bienes (cuando el empleado recibe) = tipo delivery
+            'letter_delivery_prefix' => 'CAB',
+            'letter_delivery_start' => '1',
+            'letter_delivery_text' => $cabText,
+            // Carta de Entrega de Bienes (cuando el empleado devuelve/egresa) = tipo return
+            'letter_return_prefix' => 'CEB',
+            'letter_return_start' => '1',
+            'letter_return_text' => $cebText,
             'mail_enabled' => '0',
             'mail_host' => 'smtp.office365.com',
             'mail_port' => '587',

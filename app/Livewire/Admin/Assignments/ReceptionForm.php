@@ -112,7 +112,7 @@ class ReceptionForm extends Component
 
             if ($generateLetter) {
                 $letter = ResponsiveLetter::create([
-                    'folio' => $letters->nextFolio(),
+                    'folio' => $letters->nextFolio('return'),
                     'type' => 'return',
                     'employee_id' => $this->employeeId,
                     'issued_at' => $this->returnedAt,
