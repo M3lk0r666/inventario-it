@@ -26,23 +26,17 @@ DEPLOY_OWNER="${DEPLOY_OWNER:-deploy:www-data}"
 cd "$APP_DIR"
 echo "==> Desplegando en: $APP_DIR (rama: $BRANCH)"
 
-# 1) Código
+# 1) Código — el servidor es un ESPEJO del remoto (no debe tener commits/ediciones propias).
 if [[ "${SKIP_GIT:-0}" != "1" ]]; then
-    # Ignora cambios de bits de permiso (evita que chmod marque archivos como modificados).
+    # Ignora cambios de bits de permiso (evita ruido de git por chmod).
     git config core.fileMode false || true
 
-    # Preflight: el árbol debe estar limpio (solo cambios de CONTENIDO cuentan).
-    if [[ -n "$(git status --porcelain)" ]]; then
-        echo "!! Hay cambios locales sin confirmar en el repositorio:"
-        git status --short
-        echo "   Descártalos con 'git checkout .' (o 'git stash'),"
-        echo "   o ejecuta con SKIP_GIT=1 para desplegar sin tocar git."
-        exit 1
-    fi
-    echo "==> Actualizando código (git)"
+    echo "==> Sincronizando con origin/$BRANCH (fetch + reset --hard)"
     git fetch --all --prune
-    git checkout "$BRANCH"
-    git pull --ff-only origin "$BRANCH"
+    git checkout "$BRANCH" 2>/dev/null || git checkout -b "$BRANCH" "origin/$BRANCH"
+    # reset --hard iguala el servidor al remoto. NO toca archivos ignorados
+    # (.env, storage/app, vendor, node_modules) ni descarta uploads.
+    git reset --hard "origin/$BRANCH"
 fi
 
 # 2) Modo mantenimiento (si ya estaba instalado) + recuperación automática
