@@ -84,10 +84,18 @@ class CatalogForm extends Component
             }
         }
 
-        if ($this->editingId) {
-            $def['model']::findOrFail($this->editingId)->update($validated);
-        } else {
-            $def['model']::create($validated);
+        try {
+            if ($this->editingId) {
+                $def['model']::findOrFail($this->editingId)->update($validated);
+            } else {
+                $def['model']::create($validated);
+            }
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Red de seguridad ante restricciones de BD (p.ej. duplicados).
+            $this->dispatch('toast', type: 'error',
+                message: 'No se pudo guardar: el registro podría estar duplicado o tener datos no válidos.');
+
+            return;
         }
 
         $this->open = false;
@@ -163,6 +171,14 @@ class CatalogForm extends Component
 
             if (in_array($field['key'], $def['unique'] ?? [])) {
                 $fieldRules[] = Rule::unique($table, $field['key'])->ignore($this->editingId);
+            }
+
+            // Unicidad compuesta (p.ej. modelo único por fabricante).
+            if (isset($def['unique_scoped']) && $def['unique_scoped']['field'] === $field['key']) {
+                $scope = $def['unique_scoped']['scope'];
+                $fieldRules[] = Rule::unique($table, $field['key'])
+                    ->where($scope, $this->data[$scope] ?? null)
+                    ->ignore($this->editingId);
             }
 
             $rules["data.{$field['key']}"] = $fieldRules;

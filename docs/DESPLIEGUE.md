@@ -103,13 +103,47 @@ sudo -u deploy php artisan user:password admin@inventario.test
 
 > Entra la primera vez con el Super Admin de arranque (protegido), crea tu propio Super Admin de trabajo y conserva el de contingencia. Ver Configuración → Correo para habilitar el envío (Office 365) y Configuración → Empresa para el logo y textos.
 
-### 4.2 Permisos de carpetas
+### 4.2 Permisos de carpetas (configuración una sola vez)
+
+Como algunos archivos los crea el servidor web (www-data) al subir el logo o los
+temporales de Livewire, conviene dejar el proyecto con propietario y bits correctos:
 
 ```bash
-sudo chown -R deploy:www-data /var/www/inventario-it
-sudo find /var/www/inventario-it -type f -exec chmod 664 {} \;
-sudo find /var/www/inventario-it -type d -exec chmod 775 {} \;
-sudo chmod -R ug+rwX storage bootstrap/cache
+cd /var/www/inventario-it
+sudo chown -R deploy:www-data .
+# Directorios 2775 (setgid: los archivos nuevos heredan el grupo www-data)
+sudo find . -type d -exec chmod 2775 {} +
+sudo find . -type f -exec chmod 664 {} +
+# deploy debe estar en el grupo www-data
+sudo usermod -aG www-data deploy
+```
+
+**Evitar el "ruido" de git por cambios de permisos** (por ejemplo `M storage/.../.gitignore`):
+
+```bash
+git config core.fileMode false      # git ignora cambios de bits de permiso
+```
+
+**Hacer ejecutable `deploy.sh` sin que git lo marque como modificado** — hazlo una vez
+en tu PC de desarrollo y súbelo (así al clonar ya viene ejecutable):
+
+```bash
+git update-index --chmod=+x deploy.sh
+git commit -m "deploy.sh ejecutable"
+git push
+```
+
+> El `deploy.sh` ya ejecuta `git config core.fileMode false` y ajusta propietario/permisos
+> por su cuenta (pasos 1 y 9). Si prefieres que NO toque permisos, usa `SKIP_PERMS=1 ./deploy.sh`.
+
+**Sudo sin contraseña (opcional, para despliegues desatendidos).** El paso de permisos
+usa `sudo`; si no quieres que pida contraseña, agrega una regla acotada:
+
+```bash
+sudo visudo -f /etc/sudoers.d/inventario-deploy
+```
+```
+deploy ALL=(root) NOPASSWD: /usr/bin/chown, /usr/bin/find, /usr/bin/chmod
 ```
 
 ---

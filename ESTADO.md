@@ -103,6 +103,15 @@ Settings: `letter_delivery_prefix/start/text`, `letter_return_prefix/start/text`
 Mapeo confirmado por Alberto: **CAB = entrada** (colaborador recibe), **CEB = salida** (colaborador entrega los bienes al responsable del área/almacén al egresar). Textos legales redactados acordes en `DEFAULT_TEXT`. Botones de Asignaciones: "Nueva asignación (al colaborador)" y "Recepción (salida del colaborador)"; títulos de modales alineados.
 **Marcadores en textos de carta:** los textos admiten `{colaborador}`, `{no_empleado}`, `{puesto}`, `{departamento}`, `{empresa}`, `{fecha}`, `{folio}` (constante `ResponsiveLetterService::PLACEHOLDERS`), reemplazados con los datos reales al generar el PDF (`renderPlaceholders`). Configuración muestra la lista de marcadores disponibles.
 
+### Ajuste deploy.sh — permisos en producción (feedback de Alberto, 2026-07-28)
+Problemas reales en el servidor: (1) `deploy.sh` sin bit de ejecución (Windows), (2) `chmod` falla en archivos creados por www-data (logo/livewire-tmp) → necesita `sudo chown` antes, (3) `chmod -R 775 storage` hacía ejecutables los `.gitignore` rastreados → git los marcaba como modificados y bloqueaba el pull.
+Correcciones en `deploy.sh`: ejecuta `git config core.fileMode false` (ignora cambios de bits), preflight solo por cambios de contenido, y paso de permisos con `sudo chown -R $DEPLOY_OWNER (default deploy:www-data)` + `find -type d -exec chmod 2775` (setgid) / `-type f -exec chmod 664` (evita ejecutables). Flags `SKIP_PERMS`, `DEPLOY_OWNER`. No correr con `sudo ./deploy.sh` (solo el paso de permisos usa sudo). `docs/DESPLIEGUE.md` §4.2: setup una-sola-vez (chown/setgid, core.fileMode false, `git update-index --chmod=+x deploy.sh` desde dev, sudoers NOPASSWD opcional).
+
+### Ajustes de validación producción (feedback de Alberto, 2026-07-28)
+1. **Seeder base sin Modelos ni Proveedores**: `CatalogSeeder` (producción) ya no siembra `asset_models` ni `suppliers` (se crean desde el portal). Los ejemplos se movieron a `DemoSeeder` (los activos demo los necesitan).
+2. **Fix 500 en Modelos/Activos**: el catálogo Modelos no validaba su unicidad compuesta (name+manufacturer_id) → el duplicado pegaba en el índice de BD y salía 500. Se agregó `unique_scoped` en `CatalogRegistry` + soporte en `CatalogForm::rules()`, y **red de seguridad `try/catch QueryException`** en `CatalogForm::save()` y `AssetForm::save()` → toast/mensaje amigable en vez de error 500 (activos: mensaje en `data.asset_tag`).
+3. **`<x-badge-select>`**: selector de una opción como pastillas/badges (para campos con pocas opciones). Aplicado al **estado del activo** en el alta/edición y en el modal "Cambiar estado".
+
 ## Fases completadas
 
 - **FASE 0 — Fundaciones** (2026-07-18): auditoría del proyecto base y correcciones. Validada por Alberto (incluyó fix de topbar/sidebar con marca duplicada).

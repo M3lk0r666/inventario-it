@@ -77,39 +77,9 @@ class CatalogSeeder extends Seeder
             AssetStatus::firstOrCreate(['slug' => $status['slug']], $status);
         }
 
-        $models = [
-            'Dell' => [['Latitude 5440', 'laptop'], ['OptiPlex 7010', 'desktop'], ['P2422H', 'monitor'], ['PowerEdge T150', 'server']],
-            'HP' => [['EliteBook 840 G9', 'laptop'], ['ProDesk 400 G9', 'desktop'], ['LaserJet Pro M404dn', 'printer'], ['M24f', 'monitor']],
-            'Lenovo' => [['ThinkPad L14 Gen 4', 'laptop'], ['ThinkCentre M70q', 'desktop']],
-            'Apple' => [['MacBook Air M2', 'laptop'], ['iPad 10ª gen', 'tablet']],
-            'Epson' => [['EcoTank L3250', 'printer']],
-            'Brother' => [['HL-L2350DW', 'printer']],
-            'Logitech' => [['MX Keys', 'peripheral'], ['M185', 'peripheral'], ['C920', 'peripheral']],
-            'Samsung' => [['ViewFinity S6', 'monitor']],
-            'LG' => [['24MK430H', 'monitor']],
-            'Cisco' => [['Catalyst 1300-24T', 'network'], ['CP-8841', 'ip-phone']],
-            'TP-Link' => [['Archer AX55', 'network']],
-        ];
-
-        foreach ($models as $manufacturerName => $items) {
-            $manufacturer = Manufacturer::where('name', $manufacturerName)->first();
-            foreach ($items as [$modelName, $typeSlug]) {
-                AssetModel::firstOrCreate([
-                    'name' => $modelName,
-                    'manufacturer_id' => $manufacturer->id,
-                ], [
-                    'asset_type_id' => AssetType::where('slug', $typeSlug)->value('id'),
-                ]);
-            }
-        }
-
-        foreach ([
-            ['name' => 'CompuMayor SA de CV', 'rfc' => 'CMA010203AB1', 'contact_name' => 'Laura Domínguez', 'email' => 'ventas@compumayor.mx', 'phone' => '5551234567'],
-            ['name' => 'TecnoRed del Centro', 'rfc' => 'TRC050607CD2', 'contact_name' => 'Jorge Ramírez', 'email' => 'contacto@tecnored.mx', 'phone' => '5559876543'],
-            ['name' => 'Soluciones Ofimáticas MX', 'rfc' => 'SOM080910EF3', 'contact_name' => 'Ana Castillo', 'email' => 'ana@ofimaticasmx.com', 'phone' => '8112345678'],
-        ] as $supplier) {
-            Supplier::firstOrCreate(['name' => $supplier['name']], $supplier);
-        }
+        // NOTA: los Modelos y Proveedores NO se siembran aquí (producción).
+        // Se crean desde el portal según cada empresa; los datos de ejemplo
+        // viven en DemoSeeder (solo entornos de prueba).
 
         foreach (['Perpetua', 'Suscripción anual', 'Suscripción mensual', 'OEM', 'Licencia por volumen'] as $name) {
             LicenseType::firstOrCreate(['name' => $name]);

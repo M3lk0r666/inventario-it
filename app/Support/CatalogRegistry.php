@@ -136,6 +136,8 @@ class CatalogRegistry
                     ['key' => 'asset_type_id', 'label' => 'Tipo de activo', 'type' => 'select-catalog', 'catalog' => 'tipos-de-activo', 'rules' => ['required', 'integer', 'exists:asset_types,id']],
                 ],
                 'unique' => [],
+                // Un modelo no puede repetirse para el mismo fabricante.
+                'unique_scoped' => ['field' => 'name', 'scope' => 'manufacturer_id'],
                 'in_use' => fn ($m) => $m->assets()->exists(),
             ],
             'tipos-de-licencia' => [

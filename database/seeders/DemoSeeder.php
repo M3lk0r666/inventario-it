@@ -34,6 +34,43 @@ class DemoSeeder extends Seeder
         // Es idempotente (firstOrCreate), así que puede correrse tras el seed base.
         $this->call(ProductionSeeder::class);
 
+        // Modelos y proveedores de EJEMPLO (no van en producción; los activos demo los usan).
+        $models = [
+            'Dell' => [['Latitude 5440', 'laptop'], ['OptiPlex 7010', 'desktop'], ['P2422H', 'monitor'], ['PowerEdge T150', 'server']],
+            'HP' => [['EliteBook 840 G9', 'laptop'], ['ProDesk 400 G9', 'desktop'], ['LaserJet Pro M404dn', 'printer'], ['M24f', 'monitor']],
+            'Lenovo' => [['ThinkPad L14 Gen 4', 'laptop'], ['ThinkCentre M70q', 'desktop']],
+            'Apple' => [['MacBook Air M2', 'laptop'], ['iPad 10ª gen', 'tablet']],
+            'Epson' => [['EcoTank L3250', 'printer']],
+            'Brother' => [['HL-L2350DW', 'printer']],
+            'Logitech' => [['MX Keys', 'peripheral'], ['M185', 'peripheral'], ['C920', 'peripheral']],
+            'Samsung' => [['ViewFinity S6', 'monitor']],
+            'LG' => [['24MK430H', 'monitor']],
+            'Cisco' => [['Catalyst 1300-24T', 'network'], ['CP-8841', 'ip-phone']],
+            'TP-Link' => [['Archer AX55', 'network']],
+        ];
+        foreach ($models as $manufacturerName => $items) {
+            $manufacturer = \App\Models\Manufacturer::where('name', $manufacturerName)->first();
+            if (! $manufacturer) {
+                continue;
+            }
+            foreach ($items as [$modelName, $typeSlug]) {
+                \App\Models\AssetModel::firstOrCreate([
+                    'name' => $modelName,
+                    'manufacturer_id' => $manufacturer->id,
+                ], [
+                    'asset_type_id' => \App\Models\AssetType::where('slug', $typeSlug)->value('id'),
+                ]);
+            }
+        }
+
+        foreach ([
+            ['name' => 'CompuMayor SA de CV', 'rfc' => 'CMA010203AB1', 'contact_name' => 'Laura Domínguez', 'email' => 'ventas@compumayor.mx', 'phone' => '5551234567'],
+            ['name' => 'TecnoRed del Centro', 'rfc' => 'TRC050607CD2', 'contact_name' => 'Jorge Ramírez', 'email' => 'contacto@tecnored.mx', 'phone' => '5559876543'],
+            ['name' => 'Soluciones Ofimáticas MX', 'rfc' => 'SOM080910EF3', 'contact_name' => 'Ana Castillo', 'email' => 'ana@ofimaticasmx.com', 'phone' => '8112345678'],
+        ] as $supplier) {
+            \App\Models\Supplier::firstOrCreate(['name' => $supplier['name']], $supplier);
+        }
+
         $admin = User::where('email', 'admin@inventario.test')->first();
         $tech = User::where('email', 'tecnico@inventario.test')->first();
 

@@ -125,11 +125,19 @@ class AssetForm extends Component
             ->filter(fn ($v) => filled($v))
             ->all() ?: null;
 
-        if ($this->editingId) {
-            $asset = Asset::findOrFail($this->editingId);
-            $asset->update($payload);
-        } else {
-            $asset = Asset::create($payload);
+        try {
+            if ($this->editingId) {
+                $asset = Asset::findOrFail($this->editingId);
+                $asset->update($payload);
+            } else {
+                $asset = Asset::create($payload);
+            }
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Red de seguridad: p.ej. etiqueta de inventario duplicada.
+            $this->addError('data.asset_tag', 'No se pudo guardar. Verifica que la etiqueta de inventario no esté repetida.');
+            $this->dispatch('toast', type: 'error', message: 'No se pudo guardar el activo: posible dato duplicado.');
+
+            return;
         }
 
         foreach ($this->photos as $photo) {

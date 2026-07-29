@@ -1,18 +1,19 @@
 #!/usr/bin/env bash
 #
 # deploy.sh — Despliegue/actualización idempotente de Inventario TI
-# Ejecutar como usuario 'deploy' desde la raíz del proyecto:
+# Ejecutar como usuario 'deploy' (NO con sudo) desde la raíz del proyecto:
 #   ./deploy.sh
+# Si el archivo no tiene permiso de ejecución:  bash deploy.sh
 #
 # Variables opcionales:
-#   BRANCH=main ./deploy.sh          # rama a desplegar (default: main)
-#   SKIP_GIT=1 ./deploy.sh           # no tocar git (despliegue local / sin remoto)
-#   DEPLOY_CHOWN=deploy:www-data ... # si se define, ajusta el propietario con sudo
-#   PHP_BIN=/usr/bin/php8.2 ...       # binario de PHP/Composer si no están en PATH
+#   BRANCH=main ./deploy.sh               # rama a desplegar (default: main)
+#   SKIP_GIT=1 ./deploy.sh                # no tocar git (despliegue local / sin remoto)
+#   SKIP_PERMS=1 ./deploy.sh              # no ajustar propietario/permisos
+#   DEPLOY_OWNER=deploy:www-data ./...    # propietario a fijar (default: deploy:www-data)
+#   PHP_BIN=/usr/bin/php8.2 ./...         # binarios si no están en PATH
 #
-# IMPORTANTE: no edites este archivo en el servidor. Si necesitas ajustes,
-# usa las variables de arriba. Editarlo rompe el 'git pull' (cambios locales)
-# y puede sobrescribir el script mientras corre.
+# IMPORTANTE: no edites este archivo en el servidor. Cualquier ajuste hazlo con
+# las variables de arriba. Editarlo rompe el 'git pull' (cambios locales).
 #
 set -euo pipefail
 
@@ -20,17 +21,21 @@ APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BRANCH="${BRANCH:-main}"
 PHP_BIN="${PHP_BIN:-php}"
 COMPOSER_BIN="${COMPOSER_BIN:-composer}"
+DEPLOY_OWNER="${DEPLOY_OWNER:-deploy:www-data}"
 
 cd "$APP_DIR"
 echo "==> Desplegando en: $APP_DIR (rama: $BRANCH)"
 
 # 1) Código
 if [[ "${SKIP_GIT:-0}" != "1" ]]; then
-    # Preflight: el árbol de trabajo debe estar limpio, o git checkout/pull fallará.
+    # Ignora cambios de bits de permiso (evita que chmod marque archivos como modificados).
+    git config core.fileMode false || true
+
+    # Preflight: el árbol debe estar limpio (solo cambios de CONTENIDO cuentan).
     if [[ -n "$(git status --porcelain)" ]]; then
         echo "!! Hay cambios locales sin confirmar en el repositorio:"
         git status --short
-        echo "   Confirma o descarta esos cambios (git stash / git checkout .),"
+        echo "   Descártalos con 'git checkout .' (o 'git stash'),"
         echo "   o ejecuta con SKIP_GIT=1 para desplegar sin tocar git."
         exit 1
     fi
@@ -43,7 +48,6 @@ fi
 # 2) Modo mantenimiento (si ya estaba instalado) + recuperación automática
 if [[ -f artisan ]]; then
     "$PHP_BIN" artisan down --render="errors::503" --retry=60 || true
-    # Si el script aborta por un error, se vuelve a levantar la app.
     trap '"$PHP_BIN" artisan up || true' EXIT
 fi
 
@@ -63,7 +67,6 @@ fi
 # 5) Assets front-end (Node)
 if command -v npm >/dev/null 2>&1; then
     echo "==> npm ci && build"
-    # 'npm ci' requiere package-lock.json en sincronía; si falla, cae a 'npm install'.
     npm ci || npm install
     npm run build
 else
@@ -85,13 +88,19 @@ echo "==> Cacheando config/rutas/vistas/eventos"
 "$PHP_BIN" artisan view:cache
 "$PHP_BIN" artisan event:cache
 
-# 9) Permisos de carpetas escribibles
-echo "==> Permisos storage/ y bootstrap/cache"
-# Ownership: solo si se pide explícitamente (requiere sudo NOPASSWD para 'deploy').
-if [[ -n "${DEPLOY_CHOWN:-}" ]]; then
-    sudo chown -R "$DEPLOY_CHOWN" storage bootstrap/cache
+# 9) Propietario y permisos de carpetas escribibles
+# Algunos archivos los crea el servidor web (www-data) al subir logo/temporales,
+# por eso se normaliza el propietario con sudo antes del chmod.
+if [[ "${SKIP_PERMS:-0}" != "1" ]]; then
+    echo "==> Propietario ($DEPLOY_OWNER) y permisos de storage/ y bootstrap/cache"
+    sudo chown -R "$DEPLOY_OWNER" storage bootstrap/cache
+    # Directorios 2775 (setgid: los archivos nuevos heredan el grupo www-data).
+    # Archivos 664: así los .gitignore rastreados NO quedan ejecutables.
+    sudo find storage bootstrap/cache -type d -exec chmod 2775 {} +
+    sudo find storage bootstrap/cache -type f -exec chmod 664 {} +
+else
+    echo "==> Permisos omitidos (SKIP_PERMS=1)"
 fi
-chmod -R ug+rwX storage bootstrap/cache
 
 # 10) Reiniciar cola/worker si aplica (opcional)
 "$PHP_BIN" artisan queue:restart || true
