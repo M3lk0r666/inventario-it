@@ -223,8 +223,8 @@ class CatalogRegistry
                 'in_use' => fn ($m) => false,
             ],
             'categorias-kb' => [
-                'label' => 'Categorías de KB',
-                'singular' => 'Categoría de KB',
+                'label' => 'Categorías de artículos',
+                'singular' => 'Categoría de artículo',
                 'model' => KbCategory::class,
                 'with' => [],
                 'columns' => [

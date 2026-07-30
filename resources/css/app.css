@@ -6,6 +6,24 @@
     display: none;
 }
 
+/* ===== Sidebar colapsable (sm+) ===== */
+@media (min-width: 640px) {
+    aside.sidebar-collapsed {
+        width: 4rem;
+    }
+    aside.sidebar-collapsed .sidebar-label,
+    aside.sidebar-collapsed .sidebar-header,
+    aside.sidebar-collapsed .sidebar-chevron,
+    aside.sidebar-collapsed .sidebar-submenu {
+        display: none;
+    }
+    aside.sidebar-collapsed .sidebar-item {
+        justify-content: center;
+        padding-left: 0;
+        padding-right: 0;
+    }
+}
+
 /* ===== Design system (DESIGN.md) ===== */
 
 body {
@@ -60,6 +78,20 @@ trix-toolbar .trix-button-group {
 }
 trix-editor:empty:not(:focus)::before {
     color: #737685;
+}
+/* Imágenes incrustadas: responsivas y con esquinas suaves */
+.trix-content img,
+.trix-content figure.attachment img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+}
+.trix-content figure.attachment {
+    margin: 0.5rem 0;
+}
+/* Tamaño de la figura de imagen para permitir su redimensión visual */
+.trix-content figure.attachment--preview {
+    max-width: 100%;
 }
 
 @layer components {

@@ -162,6 +162,10 @@ Route::middleware('permission:kb.view')->group(function () {
     Route::get('/base-conocimientos/{article}/editar', function (\App\Models\KbArticle $article) {
         return view('admin.kb.edit', ['article' => $article]);
     })->whereNumber('article')->middleware('permission:kb.edit')->name('kb.edit');
+
+    // Subida de imágenes pegadas/soltadas en el editor Trix.
+    Route::post('/base-conocimientos/adjuntos', [\App\Http\Controllers\Admin\TrixAttachmentController::class, 'store'])
+        ->name('kb.attachment');
 });
 
 /*

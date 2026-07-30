@@ -94,8 +94,6 @@ class CatalogSeeder extends Seeder
             ['name' => 'Control de acceso vehicular', 'requires_value' => false],
             ['name' => 'Huella de acceso a oficina', 'requires_value' => false],
             ['name' => 'Llaves de oficina', 'requires_value' => false],
-            ['name' => 'Extensión Zoom', 'requires_value' => true, 'value_label' => 'Extensión'],
-            ['name' => 'Correo institucional', 'requires_value' => true, 'value_label' => 'Correo'],
             ['name' => 'Tarjeta de presentación digital', 'requires_value' => false],
         ] as $item) {
             \App\Models\AdditionalItemType::firstOrCreate(['name' => $item['name']], $item);

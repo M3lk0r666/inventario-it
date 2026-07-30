@@ -124,14 +124,18 @@ sudo usermod -aG www-data deploy
 git config core.fileMode false      # git ignora cambios de bits de permiso
 ```
 
-**Hacer ejecutable `deploy.sh` sin que git lo marque como modificado** — hazlo una vez
-en tu PC de desarrollo y súbelo (así al clonar ya viene ejecutable):
+**Hacer ejecutables los scripts** — hazlo una vez en tu PC de desarrollo y súbelo (Windows
+no guarda el bit de ejecución; sin esto, en el servidor sale `Permission denied` al correr
+`./deploy.sh`, sobre todo tras un `git reset --hard`):
 
 ```bash
-git update-index --chmod=+x deploy.sh
-git commit -m "deploy.sh ejecutable"
+git update-index --chmod=+x deploy.sh deploy/backup.sh deploy/make-selfsigned-cert.sh
+git commit -m "Scripts de despliegue ejecutables"
 git push
 ```
+
+> Mientras tanto, en el servidor ejecuta con **`bash deploy.sh`** (no necesita el bit de
+> ejecución) o dale permiso con `chmod +x deploy.sh`.
 
 > El `deploy.sh` ya ejecuta `git config core.fileMode false` y ajusta propietario/permisos
 > por su cuenta (pasos 1 y 9). Si prefieres que NO toque permisos, usa `SKIP_PERMS=1 ./deploy.sh`.

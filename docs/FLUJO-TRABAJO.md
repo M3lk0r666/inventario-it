@@ -29,13 +29,18 @@ sudo usermod -aG www-data deploy               # deploy dentro del grupo www-dat
 git config core.fileMode false
 ```
 
-Y **desde tu PC de desarrollo** (una vez), para que `deploy.sh` venga ejecutable al clonar:
+Y **desde tu PC de desarrollo** (una vez), para que los scripts vengan ejecutables al
+clonar/actualizar (Windows no guarda el bit de ejecución; sin esto, en el servidor sale
+`-bash: ./deploy.sh: Permission denied`):
 
 ```bash
-git update-index --chmod=+x deploy.sh
-git commit -m "deploy.sh ejecutable"
+git update-index --chmod=+x deploy.sh deploy/backup.sh deploy/make-selfsigned-cert.sh
+git commit -m "Scripts de despliegue ejecutables"
 git push
 ```
+
+> Mientras no hagas esto, en el servidor ejecuta con **`bash deploy.sh`** (no requiere el bit
+> de ejecución) o dale permiso con `chmod +x deploy.sh` antes de `./deploy.sh`.
 
 **Opcional** — sudo sin contraseña para el paso de permisos (despliegues desatendidos):
 
@@ -105,24 +110,30 @@ PHP_BIN=/usr/bin/php8.2 ./deploy.sh           # binarios si no están en PATH
 
 ---
 
-## 4. Si el servidor tiene cambios locales que estorban (como pasó)
+## 4. El servidor es un ESPEJO del remoto
 
-Si el `git pull` se queja de cambios locales:
+Regla de oro: **nunca hagas `git commit` ni edites archivos en el servidor.** El `deploy.sh`
+sincroniza con `git fetch` + `git reset --hard origin/main`, es decir, **fuerza al servidor a
+quedar idéntico al remoto** y descarta cualquier cambio/commit local. Esto evita de raíz los
+líos de git (cambios de permisos, ramas divergentes, ediciones locales).
+
+`git reset --hard` **no toca** archivos ignorados: `.env`, `storage/app` (uploads/logo),
+`vendor/` y `node_modules/` se conservan.
+
+Si alguna vez el `git pull` manual se queja de "divergent branches" (porque quedó un commit
+local viejo en el servidor), límpialo una vez:
 
 ```bash
 cd /var/www/html/inventario-it
-git config core.fileMode false      # ignora cambios de permisos (quita los 'M' de .gitignore)
-git checkout -- deploy.sh           # descarta un deploy.sh editado a mano
-git status                          # verifica que quede limpio
-git pull                            # ahora sí baja limpio
+git fetch origin
+git reset --hard origin/main      # servidor idéntico al remoto
 ./deploy.sh
-# Alternativa para apartar cambios en vez de descartarlos:  git stash
 ```
 
-Recordatorio de las causas (ya corregidas en el script):
-- `sudo ./deploy.sh: command not found` → faltaba bit de ejecución. Usa `bash deploy.sh` o marca el archivo ejecutable en git (sección 0).
+Recordatorio de causas ya resueltas por el script:
+- `command not found` / `Permission denied` en `./deploy.sh` → faltaba el bit de ejecución (Windows no lo guarda; el `reset --hard` lo deja sin permiso). Solución inmediata: `bash deploy.sh`. Permanente: marcar los scripts ejecutables en git (sección 0).
 - `Operation not permitted` en chmod → archivos creados por www-data; el script hace `sudo chown` antes.
-- `M storage/.../.gitignore` → `chmod -R 775` hacía ejecutables esos archivos; con `git config core.fileMode false` y chmod por tipo (dirs 2775 / archivos 664) ya no pasa.
+- `M storage/.../.gitignore` / ramas divergentes → el `reset --hard` + `core.fileMode false` los eliminan.
 
 ---
 

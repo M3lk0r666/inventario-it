@@ -54,13 +54,20 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="form-label">Estado <span class="text-error">*</span></label>
-                    <x-badge-select model="data.asset_status_id" :options="$statuses" />
-                    @can('catalogs.create')
-                        <button type="button" class="mt-2 inline-flex items-center gap-1 text-body-sm text-primary hover:underline"
-                            onclick="Livewire.dispatch('open-quick-create', { catalog: 'estados-de-activo' })">
-                            <i class="ri-add-line"></i> Agregar estado
-                        </button>
-                    @endcan
+                    <div class="flex items-center gap-2">
+                        <select wire:model="data.asset_status_id" class="form-input flex-1">
+                            <option value="">— Seleccionar —</option>
+                            @foreach ($statuses as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        @can('catalogs.create')
+                            <button type="button" class="shrink-0 p-2 text-primary-container border border-primary-container/40 hover:bg-primary-fixed/40 rounded-lg"
+                                onclick="Livewire.dispatch('open-quick-create', { catalog: 'estados-de-activo' })" title="Agregar estado">
+                                <i class="ri-add-line"></i>
+                            </button>
+                        @endcan
+                    </div>
                     @error('data.asset_status_id') <p class="form-error">{{ $message }}</p> @enderror
                 </div>
                 <div>

@@ -112,6 +112,28 @@ Correcciones en `deploy.sh`: ejecuta `git config core.fileMode false` (ignora ca
 2. **Fix 500 en Modelos/Activos**: el catálogo Modelos no validaba su unicidad compuesta (name+manufacturer_id) → el duplicado pegaba en el índice de BD y salía 500. Se agregó `unique_scoped` en `CatalogRegistry` + soporte en `CatalogForm::rules()`, y **red de seguridad `try/catch QueryException`** en `CatalogForm::save()` y `AssetForm::save()` → toast/mensaje amigable en vez de error 500 (activos: mensaje en `data.asset_tag`).
 3. **`<x-badge-select>`**: selector de una opción como pastillas/badges (para campos con pocas opciones). Aplicado al **estado del activo** en el alta/edición y en el modal "Cambiar estado".
 
+### 2º día de pruebas producción (feedback de Alberto, 2026-07-29)
+1. **Estado de activo: se revierte `<x-badge-select>` a `<select>` nativo** en `asset-form` y `asset-detail` (modal cambiar estado). El badge-select tenía un bug de binding (`@entangle.live` no sincronizaba `data.asset_status_id` → "El campo estado es obligatorio" aunque hubiera opción elegida) y además rompía el diseño general. El componente `badge-select.blade.php` queda en el repo pero sin uso.
+2. **Imágenes en editor KB (Trix)**: antes se pegaban como data-URI base64 (línea gris, no persistían). Ahora `<x-rich-text>` maneja `trix-attachment-add` y **sube la imagen** vía `POST admin/base-conocimientos/adjuntos` (`TrixAttachmentController`, permiso kb.create/edit, guarda en `storage/app/public/kb/attachments`) e incrusta un `<img>` con URL real → persiste y se muestra en la lista/lectura. CSS `.trix-content img` responsivo. **Requiere `storage:link` + `npm run build`.**
+3. **Branding con logo de empresa**: nuevo componente `<x-company-logo>` (usa `company_logo`/`company_name` de settings, fallback a `<x-application-mark>`). Aplicado en el **topbar** (junto al título) y en un **login rediseñado** de dos paneles (marca a la izquierda con degradado primary, formulario a la derecha, en español).
+4. **Catálogo "Categorías de KB" renombrado** a "Categorías de artículos" (label/singular en `CatalogRegistry`).
+5. **Nombre del usuario en topbar**: junto al avatar ahora se muestra nombre + rol (además del bloque del dropdown y del sidebar, que ya lo tenían).
+6. **Borrar cuenta oculto para Super Admin protegido**: en `profile/show` la sección delete-user-form se oculta si `is_protected` (como en Usuarios no puedes eliminarte a ti mismo).
+7. **Sidebar colapsable**: botón en el topbar (sm+) alterna un store Alpine `sidebar.collapsed` (persistido en localStorage); en colapsado el aside pasa a 4rem (solo iconos, con tooltip `title`) y el contenido ajusta su margen. CSS `.sidebar-collapsed` en `app.css`. **Requiere `npm run build`.**
+8. **Ficha de empleado — "Cuenta de sistema"**: muestra "Empleado (sin acceso al portal)" o, si tiene usuario, "Empleado con acceso al portal" + chip con su rol.
+9. **Ficha de empleado — bienes adicionales**: sección Datos lista los bienes adicionales en poder del empleado (amparados por cartas de entrega no anuladas, descontando los de cartas de recepción; con el valor capturado y cantidad). Computed `getAdditionalItemsProperty` en `EmployeeDetail` (eager-load `responsiveLetters.items.type`).
+
+### 3er día de pruebas producción (feedback de Alberto, 2026-07-29)
+1. **Login redirige al dashboard**: `config/fortify.home` cambiado de `/` a `/admin` (antes caía en la página de bienvenida pública). **Requiere `php artisan config:clear`.**
+2. **Borrar cuenta oculto para Super Admin**: en `profile/show` la condición se amplió a `! is_protected && ! hasRole('Super Admin')` (el Administrador del Sistema no es `is_protected` pero sí Super Admin, por eso seguía viéndose).
+3. **Bienes adicionales con badge verde**: en la ficha de empleado el chip pasó de `chip-neutral` a `chip-success`.
+4. **Correo institucional y Extensión Zoom salen de bienes adicionales**: se quitaron del `CatalogSeeder` y se desactivan (`is_active=false`) en BD existente vía migración `..._000100_add_zoom_extension_to_employees` (no se borran para conservar el histórico de cartas; los forms de asignación/recepción ya filtran `is_active`). La **Extensión Zoom** ahora es un dato del empleado: columna `zoom_extension` en `employees`, campo en el alta/edición y en la ficha (Datos). El **correo institucional** ya se captura en el correo del empleado.
+5. **Alta de empleado sin "Cuenta de acceso"**: se eliminó el select `user_id` del `EmployeeForm` (causaba confusión con el acceso al portal). El acceso al portal se otorga solo desde el detalle → sección "Acceso al portal" (nota informativa en el formulario). Al editar no se toca el vínculo existente. **Requiere `php artisan migrate` + `config:clear`.**
+
+### deploy.sh — estrategia "espejo" (2026-07-28)
+El servidor de despliegue tuvo un commit local → `git pull` falló por ramas divergentes. Solución: `deploy.sh` ahora sincroniza con **`git fetch` + `git reset --hard origin/$BRANCH`** (el servidor queda idéntico al remoto; descarta cambios/commits locales). `reset --hard` no toca ignorados (.env, storage/app, vendor, node_modules). Regla: nunca commitear/editar en el servidor. Fix manual una vez: `git fetch origin && git reset --hard origin/main`.
+Bit de ejecución: Windows no lo guarda y el `reset --hard` deja `deploy.sh` sin permiso (`Permission denied`). Solución: correr `bash deploy.sh`, o fijarlo en git desde dev: `git update-index --chmod=+x deploy.sh deploy/backup.sh deploy/make-selfsigned-cert.sh`. Documentado en FLUJO-TRABAJO.md §0/§4 y DESPLIEGUE.md §4.2.
+
 ## Fases completadas
 
 - **FASE 0 — Fundaciones** (2026-07-18): auditoría del proyecto base y correcciones. Validada por Alberto (incluyó fix de topbar/sidebar con marca duplicada).

@@ -12,10 +12,17 @@
                              d="M5 7h14M5 12h14M5 17h10" />
                      </svg>
                  </button>
+                 <button type="button" x-data @click="$store.sidebar.toggle()"
+                     class="hidden sm:inline-flex items-center justify-center text-gray-500 hover:bg-gray-100 focus:ring-2 focus:ring-gray-200 rounded-lg p-2 focus:outline-none"
+                     title="Colapsar / expandir menú">
+                     <span class="sr-only">Colapsar menú</span>
+                     <i class="ri-menu-fold-line text-xl" x-show="!$store.sidebar.collapsed"></i>
+                     <i class="ri-menu-unfold-line text-xl" x-show="$store.sidebar.collapsed" x-cloak></i>
+                 </button>
                  <a href="/" class="flex items-center ms-2 md:me-24">
-                     <x-application-mark class="h-6 me-3" />
+                     <x-company-logo class="h-8 me-3" />
                      <span class="flex flex-col leading-tight">
-                         <span class="text-title-md text-primary font-bold whitespace-nowrap">{{ config('app.name') }}</span>
+                         <span class="text-title-md text-primary font-bold whitespace-nowrap">{{ \App\Models\Setting::get('company_name', config('app.name')) }}</span>
                          <span class="text-[10px] text-on-surface-variant hidden sm:block">Control de bienes informáticos</span>
                      </span>
                  </a>
@@ -27,7 +34,7 @@
                              @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
                                  <button
                                      class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300 transition">
-                                     <img class="size-8 rounded-full object-cover"
+                                     <img class="size-9 rounded-full object-cover"
                                          src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}" />
                                  </button>
                              @else
@@ -50,7 +57,7 @@
                          <x-slot name="content">
                              <!-- Account Management -->
                              <div class="block px-4 py-2 border-b border-gray-100">
-                                 <div class="text-sm font-medium text-gray-900">{{ Auth::user()->name }}</div>
+                                 <div class="text-sm font-medium text-gray-900">{{ \Illuminate\Support\Str::words(Auth::user()->name, 2, '') }}</div>
                                  <div class="text-xs text-gray-500">{{ Auth::user()->getRoleNames()->implode(', ') ?: 'Sin rol' }}</div>
                              </div>
                              <div class="block px-4 py-2 text-xs text-gray-400">

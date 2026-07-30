@@ -57,8 +57,32 @@ class EmployeeDetail extends Component
             'department', 'location', 'user.roles',
             'accounts',
             'assignments.asset.type', 'assignments.responsiveLetter',
-            'responsiveLetters',
+            'responsiveLetters.items.type',
         ])->findOrFail($this->employeeId);
+    }
+
+    /**
+     * Bienes adicionales (llaves, controles, accesos...) en poder del empleado:
+     * los amparados por cartas de entrega vigentes (no anuladas), descontando
+     * los ya cubiertos por cartas de recepción.
+     */
+    public function getAdditionalItemsProperty(): \Illuminate\Support\Collection
+    {
+        $letters = $this->employee->responsiveLetters
+            ->where('status', '!=', 'cancelled');
+
+        $tally = [];
+        foreach ($letters as $letter) {
+            $sign = $letter->type === 'return' ? -1 : 1;
+            foreach ($letter->items as $item) {
+                $label = $item->type?->name ?? 'Bien adicional';
+                $key = $label.'|'.trim((string) $item->value);
+                $tally[$key] ??= ['label' => $label, 'value' => trim((string) $item->value), 'qty' => 0];
+                $tally[$key]['qty'] += $sign;
+            }
+        }
+
+        return collect($tally)->filter(fn ($i) => $i['qty'] > 0)->values();
     }
 
     // ---- Cuentas de acceso ----

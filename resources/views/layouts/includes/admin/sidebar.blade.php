@@ -98,15 +98,16 @@
     })->filter(fn ($section) => $section['items']->isNotEmpty());
 @endphp
 
-<aside id="top-bar-sidebar"
-    class="fixed top-0 left-0 z-40 w-64 h-screen pt-16 transition-transform -translate-x-full sm:translate-x-0 bg-white border-e border-border-soft flex flex-col"
+<aside id="top-bar-sidebar" x-data
+    :class="$store.sidebar.collapsed ? 'sidebar-collapsed' : ''"
+    class="fixed top-0 left-0 z-40 w-64 h-screen pt-16 transition-all duration-200 -translate-x-full sm:translate-x-0 bg-white border-e border-border-soft flex flex-col"
     aria-label="Sidebar">
     <div class="flex-1 py-3 overflow-y-auto custom-scrollbar">
         <ul class="space-y-0.5">
             @foreach ($visibleSections as $section)
                 @if ($section['header'])
                     <li>
-                        <div class="px-6 pt-4 pb-1 text-label-md text-on-surface-variant uppercase tracking-wider">
+                        <div class="sidebar-header px-6 pt-4 pb-1 text-label-md text-on-surface-variant uppercase tracking-wider">
                             {{ $section['header'] }}
                         </div>
                     </li>
@@ -117,17 +118,18 @@
                             {{-- Item con submenú desplegable --}}
                             <div x-data="{ open: @js($item['active']) }">
                                 <button type="button" @click="open = !open"
-                                    class="flex items-center w-full px-6 py-2.5 border-l-4 transition-colors group
+                                    title="{{ $item['name'] }}"
+                                    class="sidebar-item flex items-center w-full px-6 py-2.5 border-l-4 transition-colors group
                                         {{ $item['active']
                                             ? 'border-primary-container bg-surface-container-low text-primary font-bold'
                                             : 'border-transparent text-on-surface-variant hover:bg-surface-container-low' }}">
                                     <span class="inline-flex justify-center items-center text-lg">
                                         <i class="{{ $item['icon'] }}"></i>
                                     </span>
-                                    <span class="ms-3 flex-1 text-left text-body-md">{{ $item['name'] }}</span>
-                                    <i class="ri-arrow-down-s-line transition-transform" :class="open ? 'rotate-180' : ''"></i>
+                                    <span class="sidebar-label ms-3 flex-1 text-left text-body-md">{{ $item['name'] }}</span>
+                                    <i class="sidebar-chevron ri-arrow-down-s-line transition-transform" :class="open ? 'rotate-180' : ''"></i>
                                 </button>
-                                <ul x-show="open" x-collapse x-cloak class="py-1 space-y-0.5 bg-surface-container-low/50">
+                                <ul x-show="open && !$store.sidebar.collapsed" x-collapse x-cloak class="sidebar-submenu py-1 space-y-0.5 bg-surface-container-low/50">
                                     @foreach ($item['children'] as $child)
                                         <li>
                                             <a href="{{ $child['href'] }}"
@@ -142,15 +144,15 @@
                                 </ul>
                             </div>
                         @else
-                            <a href="{{ $item['href'] }}"
-                                class="flex items-center px-6 py-2.5 border-l-4 transition-colors group
+                            <a href="{{ $item['href'] }}" title="{{ $item['name'] }}"
+                                class="sidebar-item flex items-center px-6 py-2.5 border-l-4 transition-colors group
                                     {{ $item['active']
                                         ? 'border-primary-container bg-surface-container-low text-primary font-bold'
                                         : 'border-transparent text-on-surface-variant hover:bg-surface-container-low' }}">
                                 <span class="inline-flex justify-center items-center text-lg">
                                     <i class="{{ $item['icon'] }}"></i>
                                 </span>
-                                <span class="ms-3 text-body-md">{{ $item['name'] }}</span>
+                                <span class="sidebar-label ms-3 text-body-md">{{ $item['name'] }}</span>
                             </a>
                         @endif
                     </li>
@@ -160,12 +162,12 @@
     </div>
 
     {{-- Usuario actual --}}
-    <div class="px-6 py-4 border-t border-border-soft">
+    <div class="sidebar-item px-6 py-4 border-t border-border-soft">
         <div class="flex items-center">
-            <img class="w-9 h-9 rounded-full object-cover" src="{{ auth()->user()->profile_photo_url }}"
-                alt="{{ auth()->user()->name }}" />
-            <div class="ms-3 min-w-0">
-                <p class="text-label-md text-on-surface truncate">{{ auth()->user()->name }}</p>
+            <img class="w-9 h-9 rounded-full object-cover shrink-0" src="{{ auth()->user()->profile_photo_url }}"
+                alt="{{ auth()->user()->name }}" title="{{ auth()->user()->name }}" />
+            <div class="sidebar-label ms-3 min-w-0">
+                <p class="text-label-md text-on-surface truncate">{{ \Illuminate\Support\Str::words(auth()->user()->name, 2, '') }}</p>
                 <p class="text-[10px] text-on-surface-variant truncate">
                     {{ auth()->user()->getRoleNames()->implode(', ') ?: 'Sin rol' }}
                 </p>

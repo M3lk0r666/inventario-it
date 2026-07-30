@@ -33,7 +33,8 @@
                 @livewire('profile.logout-other-browser-sessions-form')
             </div>
 
-            @if (Laravel\Jetstream\Jetstream::hasAccountDeletionFeatures())
+            {{-- Los Super Admin (y la cuenta protegida) no pueden eliminar su propia cuenta. --}}
+            @if (Laravel\Jetstream\Jetstream::hasAccountDeletionFeatures() && ! auth()->user()->is_protected && ! auth()->user()->hasRole('Super Admin'))
                 <x-section-border />
 
                 <div class="mt-10 sm:mt-0">

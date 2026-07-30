@@ -18,7 +18,7 @@ class Employee extends Model
 
     protected $fillable = [
         'employee_number', 'name', 'position', 'department_id', 'location_id',
-        'email', 'phone', 'status', 'user_id', 'notes',
+        'email', 'phone', 'zoom_extension', 'status', 'user_id', 'notes',
     ];
 
     public function department(): BelongsTo

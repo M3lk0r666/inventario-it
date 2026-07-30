@@ -70,22 +70,22 @@
                 </div>
             </div>
 
-            <div>
-                <label class="form-label">Correo</label>
-                <input type="email" wire:model="data.email" class="form-input">
-                @error('data.email') <p class="form-error">{{ $message }}</p> @enderror
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label">Correo</label>
+                    <input type="email" wire:model="data.email" class="form-input">
+                    @error('data.email') <p class="form-error">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label class="form-label">Extensión Zoom</label>
+                    <input type="text" wire:model="data.zoom_extension" class="form-input" placeholder="Ej. 1024">
+                    @error('data.zoom_extension') <p class="form-error">{{ $message }}</p> @enderror
+                </div>
             </div>
 
-            <div>
-                <label class="form-label">Cuenta de acceso al sistema (opcional)</label>
-                <select wire:model="data.user_id" class="form-input">
-                    <option value="">— Sin cuenta —</option>
-                    @foreach ($users as $value => $label)
-                        <option value="{{ $value }}">{{ $label }}</option>
-                    @endforeach
-                </select>
-                <p class="form-help">Vincula este empleado con un usuario del portal, si aplica.</p>
-                @error('data.user_id') <p class="form-error">{{ $message }}</p> @enderror
+            <div class="rounded-lg border border-border-soft bg-surface-container-low/40 px-3 py-2 text-body-sm text-on-surface-variant">
+                <i class="ri-information-line mr-1"></i>
+                El acceso al portal se otorga desde el detalle del empleado, en la sección <span class="font-medium">Acceso al portal</span>.
             </div>
 
             <div>

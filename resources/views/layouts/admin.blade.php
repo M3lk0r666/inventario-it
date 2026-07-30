@@ -43,7 +43,7 @@
 
     @include('layouts.includes.admin.sidebar')
 
-    <div class="p-4 sm:ml-64">
+    <div class="p-4 transition-all duration-200" x-data :class="$store.sidebar.collapsed ? 'sm:ml-16' : 'sm:ml-64'">
         <div class="mt-14">
             @include('layouts.includes.admin.breadcrumbs')
         </div>
@@ -75,6 +75,14 @@
 
     <script>
         document.addEventListener('alpine:init', () => {
+            Alpine.store('sidebar', {
+                collapsed: localStorage.getItem('sidebarCollapsed') === '1',
+                toggle() {
+                    this.collapsed = !this.collapsed;
+                    localStorage.setItem('sidebarCollapsed', this.collapsed ? '1' : '0');
+                },
+            });
+
             Alpine.data('toastManager', () => ({
                 toasts: [],
                 push(type, message) {

@@ -3,7 +3,6 @@
 namespace App\Livewire\Admin\Employees;
 
 use App\Models\Employee;
-use App\Models\User;
 use App\Support\CatalogRegistry;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Validation\Rule;
@@ -34,7 +33,7 @@ class EmployeeForm extends Component
         $this->data = [
             'employee_number' => null, 'name' => null, 'position' => null,
             'department_id' => null, 'location_id' => null, 'email' => null,
-            'phone' => null, 'status' => 'active', 'user_id' => null, 'notes' => null,
+            'phone' => null, 'zoom_extension' => null, 'status' => 'active', 'notes' => null,
         ];
 
         if ($id) {
@@ -87,13 +86,13 @@ class EmployeeForm extends Component
             'data.location_id' => ['nullable', 'integer', 'exists:locations,id'],
             'data.email' => ['nullable', 'email', 'max:255', Rule::unique('employees', 'email')->ignore($this->editingId)],
             'data.phone' => ['nullable', 'string', 'max:30'],
+            'data.zoom_extension' => ['nullable', 'string', 'max:20'],
             'data.status' => ['required', 'in:active,inactive'],
-            'data.user_id' => ['nullable', 'integer', 'exists:users,id', Rule::unique('employees', 'user_id')->ignore($this->editingId)],
             'data.notes' => ['nullable', 'string'],
         ], [], [
             'data.employee_number' => 'número de empleado', 'data.name' => 'nombre', 'data.position' => 'puesto',
             'data.department_id' => 'departamento', 'data.location_id' => 'ubicación', 'data.email' => 'correo',
-            'data.phone' => 'teléfono', 'data.status' => 'estado', 'data.user_id' => 'cuenta de acceso',
+            'data.phone' => 'teléfono', 'data.zoom_extension' => 'extensión Zoom', 'data.status' => 'estado',
         ]);
 
         if ($this->editingId) {
@@ -155,15 +154,11 @@ class EmployeeForm extends Component
 
     public function render()
     {
-        // Usuarios sin empleado vinculado (o el actual)
-        $linkedUserIds = Employee::whereNotNull('user_id')
-            ->when($this->editingId, fn ($q) => $q->where('id', '!=', $this->editingId))
-            ->pluck('user_id');
-
+        // El acceso al portal se gestiona desde el detalle del empleado
+        // (sección "Acceso al portal"), no desde este formulario.
         return view('livewire.admin.employees.employee-form', [
             'departments' => CatalogRegistry::options('departamentos'),
             'locations' => CatalogRegistry::options('ubicaciones'),
-            'users' => User::whereNotIn('id', $linkedUserIds)->orderBy('name')->pluck('name', 'id'),
         ]);
     }
 }

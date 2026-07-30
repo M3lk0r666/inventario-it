@@ -486,7 +486,11 @@
                 <div class="space-y-4">
                     <div>
                         <label class="form-label">Nuevo estado <span class="text-error">*</span></label>
-                        <x-badge-select model="newStatusId" :options="$statuses" />
+                        <select wire:model="newStatusId" class="form-input">
+                            @foreach ($statuses as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
                         @error('newStatusId') <p class="form-error">{{ $message }}</p> @enderror
                     </div>
                     <div>

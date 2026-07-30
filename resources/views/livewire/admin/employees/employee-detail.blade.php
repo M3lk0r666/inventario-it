@@ -64,14 +64,43 @@
                         'Ubicación' => $employee->location?->name,
                         'Correo' => $employee->email,
                         'Teléfono' => $employee->phone,
-                        'Cuenta de sistema' => $employee->user?->name,
+                        'Extensión Zoom' => $employee->zoom_extension,
                     ] as $label => $value)
                         <div>
                             <dt class="text-label-md text-on-surface-variant uppercase tracking-wider">{{ $label }}</dt>
                             <dd class="mt-0.5 text-body-md text-on-surface">{{ $value ?? '—' }}</dd>
                         </div>
                     @endforeach
+
+                    {{-- Cuenta de sistema: "Empleado" si no tiene acceso al portal; si lo tiene, su rol. --}}
+                    <div>
+                        <dt class="text-label-md text-on-surface-variant uppercase tracking-wider">Cuenta de sistema</dt>
+                        @if ($employee->user)
+                            <dd class="mt-0.5 text-body-md text-on-surface">
+                                Empleado con acceso al portal
+                                <span class="ml-1 chip chip-info">{{ $employee->user->getRoleNames()->implode(', ') ?: 'Sin rol' }}</span>
+                            </dd>
+                        @else
+                            <dd class="mt-0.5 text-body-md text-on-surface">Empleado <span class="text-on-surface-variant">(sin acceso al portal)</span></dd>
+                        @endif
+                    </div>
                 </dl>
+
+                {{-- Bienes adicionales en poder del empleado --}}
+                @if ($this->additionalItems->isNotEmpty())
+                    <div class="mt-6 border-t border-border-soft pt-4">
+                        <dt class="text-label-md text-on-surface-variant uppercase tracking-wider mb-2">Bienes adicionales asignados</dt>
+                        <ul class="flex flex-wrap gap-2">
+                            @foreach ($this->additionalItems as $item)
+                                <li class="chip chip-success">
+                                    <i class="ri-key-2-line mr-1"></i>
+                                    {{ $item['label'] }}@if ($item['value'])<span class="text-on-surface-variant">: {{ $item['value'] }}</span>@endif
+                                    @if ($item['qty'] > 1)<span class="ml-1 font-semibold">×{{ $item['qty'] }}</span>@endif
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 @if ($employee->notes)
                     <div class="mt-6 border-t border-border-soft pt-4">
                         <dt class="text-label-md text-on-surface-variant uppercase tracking-wider">Notas</dt>
