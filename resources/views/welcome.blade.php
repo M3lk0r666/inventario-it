@@ -30,10 +30,10 @@
 
     {{-- Barra superior --}}
     <header class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-border-soft">
-        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+        <div class="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 @if ($logo)
-                    <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($logo) }}" alt="Logo" class="h-8 object-contain">
+                    <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($logo) }}" alt="Logo" class="h-14 w-auto object-contain">
                 @else
                     <span class="text-title-md font-bold text-primary">{{ $companyName }}</span>
                 @endif

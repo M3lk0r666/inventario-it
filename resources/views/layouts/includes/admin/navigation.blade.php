@@ -13,7 +13,7 @@
                      </svg>
                  </button>
                  <a href="/" class="flex items-center ms-2 md:me-24">
-                     <x-company-logo class="h-8 me-3" />
+                     <x-company-logo class="h-10 me-3" />
                      <span class="flex flex-col leading-tight">
                          <span class="text-title-md text-primary font-bold whitespace-nowrap">{{ \App\Models\Setting::get('company_name', config('app.name')) }}</span>
                          <span class="text-[10px] text-on-surface-variant hidden sm:block">Control de bienes informáticos</span>
