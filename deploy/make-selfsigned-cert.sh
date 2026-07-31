@@ -2,15 +2,15 @@
 #
 # make-selfsigned-cert.sh — Genera un certificado autofirmado local para
 # servir el portal por HTTPS cuando NO se usa un dominio público / Let's Encrypt
-# (p.ej. red interna con IP o nombre local como inventario.local).
+# (p.ej. red interna con DNS propio como inventario-it.netjernetworks.net).
 #
 # Uso (como root/sudo):
-#   sudo ./deploy/make-selfsigned-cert.sh inventario.local
+#   sudo ./deploy/make-selfsigned-cert.sh inventario-it.netjernetworks.net
 #   sudo CN=192.168.1.10 ./deploy/make-selfsigned-cert.sh
 #
 set -euo pipefail
 
-CN="${1:-${CN:-inventario.local}}"
+CN="${1:-${CN:-inventario-it.netjernetworks.net}}"
 SSL_DIR="/etc/ssl/inventario-it"
 DAYS="${DAYS:-3650}"
 

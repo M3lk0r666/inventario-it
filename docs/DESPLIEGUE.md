@@ -62,17 +62,17 @@ EXIT;
 ## 3. Código y configuración
 
 ```bash
-sudo mkdir -p /var/www/inventario-it
-sudo chown deploy:www-data /var/www/inventario-it
-sudo -u deploy git clone <URL_DEL_REPO> /var/www/inventario-it
-cd /var/www/inventario-it
+sudo mkdir -p /var/www/html/inventario-it
+sudo chown deploy:www-data /var/www/html/inventario-it
+sudo -u deploy git clone <URL_DEL_REPO> /var/www/html/inventario-it
+cd /var/www/html/inventario-it
 
 # .env de producción
 cp deploy/env.production.example .env
 nano .env    # ajustar APP_URL, credenciales de BD, etc.
 ```
 
-En `.env` verifica: `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://...`, datos de `DB_*` y `SESSION_SECURE_COOKIE=true`.
+En `.env` verifica: `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://inventario-it.netjernetworks.net`, datos de `DB_*` y `SESSION_SECURE_COOKIE=true`.
 
 ---
 
@@ -81,7 +81,7 @@ En `.env` verifica: `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://..
 El script `deploy.sh` es idempotente (sirve para instalar y para actualizar):
 
 ```bash
-cd /var/www/inventario-it
+cd /var/www/html/inventario-it
 chmod +x deploy.sh deploy/*.sh
 SKIP_GIT=1 ./deploy.sh     # primera vez: ya clonamos, evitamos git pull
 ```
@@ -109,7 +109,7 @@ Como algunos archivos los crea el servidor web (www-data) al subir el logo o los
 temporales de Livewire, conviene dejar el proyecto con propietario y bits correctos:
 
 ```bash
-cd /var/www/inventario-it
+cd /var/www/html/inventario-it
 sudo chown -R deploy:www-data .
 # Directorios 2775 (setgid: los archivos nuevos heredan el grupo www-data)
 sudo find . -type d -exec chmod 2775 {} +
@@ -158,7 +158,8 @@ deploy ALL=(root) NOPASSWD: /usr/bin/chown, /usr/bin/find, /usr/bin/chmod
 sudo a2enmod rewrite ssl headers
 sudo cp deploy/apache-inventario.conf     /etc/apache2/sites-available/inventario-it.conf
 sudo cp deploy/apache-inventario-ssl.conf /etc/apache2/sites-available/inventario-it-ssl.conf
-# Edita ambos: ServerName (dominio o inventario.local) y rutas de certificado.
+# Ambos ya traen ServerName inventario-it.netjernetworks.net y DocumentRoot /var/www/html/inventario-it/public.
+# Revisa las rutas de certificado en el archivo SSL.
 sudo nano /etc/apache2/sites-available/inventario-it-ssl.conf
 ```
 
@@ -168,11 +169,11 @@ sudo nano /etc/apache2/sites-available/inventario-it-ssl.conf
 
 ### Opción A — Certificado autofirmado local (red interna / sin dominio público)
 
-Recomendado cuando el servidor no tiene dominio público (acceso por IP o nombre local).
+Recomendado en red interna con DNS propio (dominio no validable por una CA pública).
 
 ```bash
-# Genera el certificado (CN = nombre o IP con que accederás)
-sudo ./deploy/make-selfsigned-cert.sh inventario.local
+# Genera el certificado (CN = dominio con que accederás)
+sudo ./deploy/make-selfsigned-cert.sh inventario-it.netjernetworks.net
 #   o por IP:  sudo CN=192.168.1.10 ./deploy/make-selfsigned-cert.sh
 ```
 
@@ -182,7 +183,7 @@ Esto crea `/etc/ssl/inventario-it/inventario-it.crt` y `.key`, ya apuntados en `
 
 ```bash
 sudo apt install -y certbot python3-certbot-apache
-sudo certbot --apache -d tu-dominio.com
+sudo certbot --apache -d inventario-it.netjernetworks.net
 ```
 Luego, en `apache-inventario-ssl.conf`, comenta las líneas de la Opción A y descomenta las de Let's Encrypt.
 
@@ -195,7 +196,7 @@ sudo apache2ctl configtest      # debe decir "Syntax OK"
 sudo systemctl reload apache2
 ```
 
-Prueba en el navegador: `https://inventario.local` (o tu dominio/IP).
+Prueba en el navegador: `https://inventario-it.netjernetworks.net`.
 
 ---
 
@@ -210,8 +211,8 @@ sudo -u deploy crontab -e
 
 Contenido (ver `deploy/crontab.example`):
 ```cron
-* * * * * cd /var/www/inventario-it && php artisan schedule:run >> /dev/null 2>&1
-30 2 * * * BACKUP_DIR=/var/backups/inventario-it RETENTION_DAYS=14 /var/www/inventario-it/deploy/backup.sh >> /var/log/inventario-backup.log 2>&1
+* * * * * cd /var/www/html/inventario-it && php artisan schedule:run >> /dev/null 2>&1
+30 2 * * * BACKUP_DIR=/var/backups/inventario-it RETENTION_DAYS=14 /var/www/html/inventario-it/deploy/backup.sh >> /var/log/inventario-backup.log 2>&1
 ```
 
 ---
@@ -226,7 +227,7 @@ Contenido (ver `deploy/crontab.example`):
   ```
 - **Restaurar storage:**
   ```bash
-  tar xzf /var/backups/inventario-it/storage_YYYYMMDD_HHMMSS.tar.gz -C /var/www/inventario-it
+  tar xzf /var/backups/inventario-it/storage_YYYYMMDD_HHMMSS.tar.gz -C /var/www/html/inventario-it
   ```
 
 ---
@@ -234,7 +235,7 @@ Contenido (ver `deploy/crontab.example`):
 ## 9. Actualizaciones posteriores
 
 ```bash
-cd /var/www/inventario-it
+cd /var/www/html/inventario-it
 sudo -u deploy ./deploy.sh        # git pull + composer + build + migrate + cachés
 ```
 
@@ -263,7 +264,7 @@ sudo -u deploy ./deploy.sh        # git pull + composer + build + migrate + cach
 Si un despliegue sale mal:
 
 ```bash
-cd /var/www/inventario-it
+cd /var/www/html/inventario-it
 sudo -u deploy php artisan down
 git log --oneline -n 5                      # identifica el commit estable anterior
 sudo -u deploy git checkout <commit_estable>

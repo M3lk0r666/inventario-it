@@ -12,13 +12,6 @@
                              d="M5 7h14M5 12h14M5 17h10" />
                      </svg>
                  </button>
-                 <button type="button" x-data @click="$store.sidebar.toggle()"
-                     class="hidden sm:inline-flex items-center justify-center text-gray-500 hover:bg-gray-100 focus:ring-2 focus:ring-gray-200 rounded-lg p-2 focus:outline-none"
-                     title="Colapsar / expandir menú">
-                     <span class="sr-only">Colapsar menú</span>
-                     <i class="ri-menu-fold-line text-xl" x-show="!$store.sidebar.collapsed"></i>
-                     <i class="ri-menu-unfold-line text-xl" x-show="$store.sidebar.collapsed" x-cloak></i>
-                 </button>
                  <a href="/" class="flex items-center ms-2 md:me-24">
                      <x-company-logo class="h-8 me-3" />
                      <span class="flex flex-col leading-tight">

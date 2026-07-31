@@ -23,7 +23,8 @@
                         @elseif ($field['type'] === 'textarea')
                             <textarea wire:model="data.{{ $field['key'] }}" rows="3" class="form-input"></textarea>
                         @elseif ($field['type'] === 'json')
-                            <textarea wire:model="data.{{ $field['key'] }}" rows="6" spellcheck="false"
+                            <textarea wire:model="data.{{ $field['key'] }}" rows="8" spellcheck="false"
+                                placeholder="{{ $field['placeholder'] ?? '' }}"
                                 class="form-input font-mono text-mono-sm"></textarea>
                         @elseif ($field['type'] === 'select')
                             <select wire:model="data.{{ $field['key'] }}" class="form-input">

@@ -11,6 +11,7 @@
     aside.sidebar-collapsed {
         width: 4rem;
     }
+    /* En colapsado se ocultan textos, chevrons y submenús: solo iconos */
     aside.sidebar-collapsed .sidebar-label,
     aside.sidebar-collapsed .sidebar-header,
     aside.sidebar-collapsed .sidebar-chevron,

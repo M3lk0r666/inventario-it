@@ -83,6 +83,22 @@
                 },
             });
 
+            // Flotante del sidebar colapsado (etiqueta + submenú junto al ícono)
+            Alpine.data('sidebarFlyout', () => ({
+                fly: { show: false, top: 0, label: '', children: [] },
+                _t: null,
+                openFly(e, label, children) {
+                    if (!this.$store.sidebar.collapsed || window.innerWidth < 640) return;
+                    clearTimeout(this._t);
+                    const r = e.currentTarget.getBoundingClientRect();
+                    this.fly = { show: true, top: Math.round(r.top), label, children: children || [] };
+                },
+                closeFly() {
+                    this._t = setTimeout(() => { this.fly.show = false; }, 150);
+                },
+                cancelClose() { clearTimeout(this._t); },
+            }));
+
             Alpine.data('toastManager', () => ({
                 toasts: [],
                 push(type, message) {

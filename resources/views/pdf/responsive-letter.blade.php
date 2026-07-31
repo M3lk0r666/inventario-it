@@ -10,9 +10,9 @@
     .header td { vertical-align: middle; }
     .doc-title { font-size: 13px; font-weight: bold; text-align: right; color: #191b23; }
     .folio { font-size: 10px; text-align: right; color: #434654; margin-top: 2px; }
-    .rule { border: none; border-top: 2px solid #E87722; margin: 8px 0 14px; }
+    .rule { border: none; border-top: 2px solid #003d9b; margin: 8px 0 14px; }
     .cancelled { position: fixed; top: 42%; left: 14%; font-size: 84px; color: rgba(186, 26, 26, 0.16); transform: rotate(-22deg); font-weight: bold; }
-    .section-title { font-size: 11px; font-weight: bold; margin: 14px 0 6px; color: #191b23; border-left: 4px solid #E87722; padding-left: 6px; }
+    .section-title { font-size: 11px; font-weight: bold; margin: 14px 0 6px; color: #191b23; border-left: 4px solid #003d9b; padding-left: 6px; }
     .info-table { width: 100%; border-collapse: collapse; }
     .info-table td { padding: 3px 6px; font-size: 10px; }
     .info-label { color: #434654; font-weight: bold; width: 150px; }
@@ -41,7 +41,7 @@
                 @if ($logoPath)
                     <img src="{{ $logoPath }}" style="height: 40px;">
                 @else
-                    <span style="font-size: 16px; font-weight: bold; color: #E87722;">{{ $companyName }}</span>
+                    <span style="font-size: 16px; font-weight: bold; color: #003d9b;">{{ $companyName }}</span>
                 @endif
             </td>
             <td style="width: 42%">

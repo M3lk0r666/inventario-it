@@ -91,7 +91,11 @@ class CatalogRegistry
                     ['key' => 'name', 'label' => 'Nombre', 'type' => 'text', 'rules' => ['required', 'string', 'max:255'], 'quick' => true],
                     ['key' => 'slug', 'label' => 'Slug', 'type' => 'text', 'rules' => ['nullable', 'string', 'max:255'], 'help' => 'Se genera automáticamente si se deja vacío.'],
                     ['key' => 'icon', 'label' => 'Icono (Remix Icon)', 'type' => 'text', 'rules' => ['nullable', 'string', 'max:50'], 'placeholder' => 'ri-computer-line'],
-                    ['key' => 'spec_fields', 'label' => 'Campos de especificaciones (JSON)', 'type' => 'json', 'rules' => ['nullable', 'json'], 'help' => 'Arreglo de objetos {key, label, type}. Define los campos dinámicos de la pestaña Especificaciones.'],
+                    ['key' => 'spec_fields', 'label' => 'Campos de especificaciones (JSON)', 'type' => 'json', 'rules' => ['nullable', 'json'], 'help' => 'Arreglo de objetos con "key" (identificador sin espacios), "label" (texto que se muestra) y "type" (text o number). Define los campos que aparecen al dar de alta un activo de este tipo y en su pestaña Especificaciones.', 'placeholder' => '[
+  {"key": "mac", "label": "Dirección MAC", "type": "text"},
+  {"key": "extension", "label": "Extensión", "type": "number"},
+  {"key": "poe", "label": "Alimentación PoE", "type": "text"}
+]'],
                 ],
                 'unique' => ['name', 'slug'],
                 'slug' => ['field' => 'slug', 'from' => 'name'],

@@ -98,7 +98,7 @@
     })->filter(fn ($section) => $section['items']->isNotEmpty());
 @endphp
 
-<aside id="top-bar-sidebar" x-data
+<aside id="top-bar-sidebar" x-data="sidebarFlyout()"
     :class="$store.sidebar.collapsed ? 'sidebar-collapsed' : ''"
     class="fixed top-0 left-0 z-40 w-64 h-screen pt-16 transition-all duration-200 -translate-x-full sm:translate-x-0 bg-white border-e border-border-soft flex flex-col"
     aria-label="Sidebar">
@@ -118,7 +118,8 @@
                             {{-- Item con submenú desplegable --}}
                             <div x-data="{ open: @js($item['active']) }">
                                 <button type="button" @click="open = !open"
-                                    title="{{ $item['name'] }}"
+                                    @mouseenter="openFly($event, @js($item['name']), @js($item['children']))"
+                                    @mouseleave="closeFly()"
                                     class="sidebar-item flex items-center w-full px-6 py-2.5 border-l-4 transition-colors group
                                         {{ $item['active']
                                             ? 'border-primary-container bg-surface-container-low text-primary font-bold'
@@ -129,7 +130,7 @@
                                     <span class="sidebar-label ms-3 flex-1 text-left text-body-md">{{ $item['name'] }}</span>
                                     <i class="sidebar-chevron ri-arrow-down-s-line transition-transform" :class="open ? 'rotate-180' : ''"></i>
                                 </button>
-                                <ul x-show="open && !$store.sidebar.collapsed" x-collapse x-cloak class="sidebar-submenu py-1 space-y-0.5 bg-surface-container-low/50">
+                                <ul x-show="open" x-collapse x-cloak class="sidebar-submenu py-1 space-y-0.5 bg-surface-container-low/50">
                                     @foreach ($item['children'] as $child)
                                         <li>
                                             <a href="{{ $child['href'] }}"
@@ -144,7 +145,9 @@
                                 </ul>
                             </div>
                         @else
-                            <a href="{{ $item['href'] }}" title="{{ $item['name'] }}"
+                            <a href="{{ $item['href'] }}"
+                                @mouseenter="openFly($event, @js($item['name']), [])"
+                                @mouseleave="closeFly()"
                                 class="sidebar-item flex items-center px-6 py-2.5 border-l-4 transition-colors group
                                     {{ $item['active']
                                         ? 'border-primary-container bg-surface-container-low text-primary font-bold'
@@ -161,17 +164,34 @@
         </ul>
     </div>
 
-    {{-- Usuario actual --}}
-    <div class="sidebar-item px-6 py-4 border-t border-border-soft">
-        <div class="flex items-center">
-            <img class="w-9 h-9 rounded-full object-cover shrink-0" src="{{ auth()->user()->profile_photo_url }}"
-                alt="{{ auth()->user()->name }}" title="{{ auth()->user()->name }}" />
-            <div class="sidebar-label ms-3 min-w-0">
-                <p class="text-label-md text-on-surface truncate">{{ \Illuminate\Support\Str::words(auth()->user()->name, 2, '') }}</p>
-                <p class="text-[10px] text-on-surface-variant truncate">
-                    {{ auth()->user()->getRoleNames()->implode(', ') ?: 'Sin rol' }}
-                </p>
-            </div>
-        </div>
+    {{-- Botón colapsar / expandir --}}
+    <div class="border-t border-border-soft p-2">
+        <button type="button" x-data @click="$store.sidebar.toggle()" title="Colapsar / expandir menú"
+            class="sidebar-item flex items-center w-full px-6 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors">
+            <span class="inline-flex justify-center items-center text-lg">
+                <i class="ri-menu-fold-line" x-show="!$store.sidebar.collapsed"></i>
+                <i class="ri-menu-unfold-line" x-show="$store.sidebar.collapsed" x-cloak></i>
+            </span>
+            <span class="sidebar-label ms-3 text-body-md">Colapsar menú</span>
+        </button>
+    </div>
+
+    {{-- Flotante (solo en modo colapsado): etiqueta del ícono y su submenú --}}
+    <div x-cloak x-show="fly.show" @mouseenter="cancelClose()" @mouseleave="closeFly()"
+        :style="`top:${fly.top}px`"
+        x-transition.opacity.duration.100ms
+        class="fixed left-16 z-50 min-w-52 rounded-lg border border-border-soft bg-white shadow-[0_10px_25px_rgba(0,0,0,0.12)] py-1">
+        <div class="px-4 pt-2 pb-1 text-label-md text-on-surface-variant uppercase tracking-wider" x-text="fly.label"></div>
+        <template x-if="fly.children.length">
+            <ul class="py-1">
+                <template x-for="c in fly.children" :key="c.href">
+                    <li>
+                        <a :href="c.href" x-text="c.name"
+                            :class="c.active ? 'text-primary font-bold' : 'text-on-surface-variant'"
+                            class="block px-4 py-1.5 text-body-sm hover:bg-surface-container-low hover:text-primary"></a>
+                    </li>
+                </template>
+            </ul>
+        </template>
     </div>
 </aside>
