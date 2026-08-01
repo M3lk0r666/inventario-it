@@ -1,5 +1,5 @@
 <div>
-    <x-slide-over model="open" :title="$editingId ? 'Editar licencia' : 'Nueva licencia'" width="max-w-xl">
+    <x-slide-over model="open" :title="$editingId ? 'Editar licencia' : 'Nueva licencia'" width="max-w-xl" icon="ri-key-2-line">
         <form wire:submit="save" class="space-y-4">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>

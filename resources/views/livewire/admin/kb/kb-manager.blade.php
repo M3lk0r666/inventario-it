@@ -109,7 +109,7 @@
     @endif
 
     {{-- Compartir por correo --}}
-    <x-slide-over model="sharing" title="Compartir artículo por correo" width="max-w-lg">
+    <x-slide-over model="sharing" title="Compartir artículo por correo" width="max-w-lg" icon="ri-mail-send-line">
         @unless ($mailReady)
             <div class="mb-4 flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-body-sm text-amber-800">
                 <i class="ri-error-warning-line"></i>

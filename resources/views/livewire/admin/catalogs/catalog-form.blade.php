@@ -1,5 +1,5 @@
 <div>
-    <x-slide-over model="open" :title="($editingId ? 'Editar ' : 'Crear ') . $def['singular']">
+    <x-slide-over model="open" :title="($editingId ? 'Editar ' : 'Crear ') . $def['singular']" :icon="$def['icon'] ?? 'ri-list-settings-line'">
         <form wire:submit="save" class="space-y-4">
             @foreach ($def['fields'] as $field)
                 <div wire:key="field-{{ $catalog }}-{{ $field['key'] }}">

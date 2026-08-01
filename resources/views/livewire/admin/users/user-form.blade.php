@@ -1,5 +1,5 @@
 <div>
-    <x-slide-over model="open" :title="$editingId ? 'Editar usuario' : 'Nuevo usuario'">
+    <x-slide-over model="open" :title="$editingId ? 'Editar usuario' : 'Nuevo usuario'" icon="ri-user-settings-line">
         <form wire:submit="save" class="space-y-4">
             <div>
                 <label class="form-label">Nombre <span class="text-error">*</span></label>

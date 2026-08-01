@@ -270,22 +270,7 @@
                 @if ($activities->isEmpty())
                     <p class="text-body-md text-on-surface-variant">Sin cambios registrados.</p>
                 @else
-                    <ol class="relative border-s border-border-soft ms-2 space-y-4">
-                        @foreach ($activities as $activity)
-                            <li class="ms-5">
-                                <span class="absolute -start-[5px] mt-1.5 w-2.5 h-2.5 rounded-full bg-primary-container"></span>
-                                <p class="text-body-md text-on-surface">
-                                    <span class="font-medium">{{ $activity->causer?->name ?? 'Sistema' }}</span>
-                                    @switch($activity->description)
-                                        @case('created') creó el empleado @break
-                                        @case('updated') actualizó el empleado @break
-                                        @default {{ $activity->description }}
-                                    @endswitch
-                                </p>
-                                <p class="text-body-sm text-outline">{{ $activity->created_at->format('d/m/Y H:i') }}</p>
-                            </li>
-                        @endforeach
-                    </ol>
+                    <x-activity-timeline :activities="$activities" entity="empleado" />
                 @endif
             @endif
         </div>

@@ -1,5 +1,5 @@
 <div>
-    <x-slide-over model="open" :title="$editingId ? 'Editar problema' : 'Reportar problema'" width="max-w-xl">
+    <x-slide-over model="open" :title="$editingId ? 'Editar problema' : 'Reportar problema'" width="max-w-xl" icon="ri-error-warning-line">
         <form wire:submit="save" class="space-y-4">
             <div>
                 <label class="form-label">Título <span class="text-error">*</span></label>

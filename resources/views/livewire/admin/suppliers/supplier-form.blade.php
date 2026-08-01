@@ -1,5 +1,5 @@
 <div>
-    <x-slide-over model="open" :title="$editingId ? 'Editar proveedor' : 'Nuevo proveedor'">
+    <x-slide-over model="open" :title="$editingId ? 'Editar proveedor' : 'Nuevo proveedor'" icon="ri-truck-line">
         <form wire:submit="save" class="space-y-4">
             <div>
                 <label class="form-label">Nombre / Razón social <span class="text-error">*</span></label>

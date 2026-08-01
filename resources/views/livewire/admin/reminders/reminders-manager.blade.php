@@ -65,7 +65,7 @@
     @endif
 
     {{-- Formulario --}}
-    <x-slide-over model="open" :title="$editingId ? 'Editar recordatorio' : 'Nuevo recordatorio'">
+    <x-slide-over model="open" :title="$editingId ? 'Editar recordatorio' : 'Nuevo recordatorio'" icon="ri-alarm-line">
         <form wire:submit="save" class="space-y-4">
             <div>
                 <label class="form-label">Título <span class="text-error">*</span></label>

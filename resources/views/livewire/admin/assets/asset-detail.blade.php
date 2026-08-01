@@ -445,33 +445,7 @@
                 @if ($activities->isEmpty())
                     <p class="text-body-md text-on-surface-variant">Sin cambios registrados.</p>
                 @else
-                    <ol class="relative border-s border-border-soft ms-2 space-y-5">
-                        @foreach ($activities as $activity)
-                            <li class="ms-5">
-                                <span class="absolute -start-[5px] mt-1.5 w-2.5 h-2.5 rounded-full bg-primary-container"></span>
-                                <p class="text-body-md text-on-surface">
-                                    <span class="font-medium">{{ $activity->causer?->name ?? 'Sistema' }}</span>
-                                    —
-                                    @switch($activity->description)
-                                        @case('created') creó el activo @break
-                                        @case('updated') actualizó el activo @break
-                                        @case('deleted') eliminó el activo @break
-                                        @default {{ $activity->description }}
-                                    @endswitch
-                                </p>
-                                @php($changes = collect($activity->properties['attributes'] ?? [])->except(['updated_at']))
-                                @if ($changes->isNotEmpty() && $activity->description === 'updated')
-                                    <p class="text-body-sm text-on-surface-variant">
-                                        Campos: {{ $changes->keys()->implode(', ') }}
-                                    </p>
-                                @endif
-                                @if (isset($activity->properties['nota']))
-                                    <p class="text-body-sm text-on-surface-variant italic">"{{ $activity->properties['nota'] }}"</p>
-                                @endif
-                                <p class="text-body-sm text-outline">{{ $activity->created_at->format('d/m/Y H:i') }}</p>
-                            </li>
-                        @endforeach
-                    </ol>
+                    <x-activity-timeline :activities="$activities" entity="activo" />
                 @endif
             @endif
         </div>

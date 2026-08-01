@@ -136,6 +136,28 @@ Correcciones en `deploy.sh`: ejecuta `git config core.fileMode false` (ignora ca
 3. **Especificaciones (JSON) de tipos de activo**: la ayuda y un `placeholder` explican el formato (arreglo de objetos `{key, label, type}`, type = text|number) con ejemplo. Se capturan aquí los campos dinámicos que luego aparecen al **dar de alta un activo** de ese tipo y en su **pestaña Especificaciones**.
 5. **PDFs estandarizados a azul**: la carta responsiva usaba el naranja NETJER `#E87722` (regla superior, borde de títulos, nombre de empresa) → cambiado a `#003d9b` (mismo azul que el reporte). **Requiere `npm run build` + `view:clear`.**
 
+### Distintivo con icono en ventanas (estilo GLPI) (2026-07-31)
+`<x-slide-over>` acepta prop opcional `icon` (Remix Icon) y muestra un **badge azul** con ese icono junto al título (encabezado de la ventana). Aplicado a las 12 ventanas: activos, empleados, usuarios, proveedores, consumibles, licencias, problemas, recordatorios, asignación, recepción, compartir KB y catálogos (este último usa el icono propio del catálogo, `$def['icon']`). Para nuevas ventanas basta con `<x-slide-over ... icon="ri-...">`. **Requiere `npm run build` + `view:clear`.**
+
+### Histórico como línea de tiempo (2026-07-31)
+Nuevo componente `resources/views/components/activity-timeline.blade.php` (`<x-activity-timeline :activities entity>`): línea vertical con ícono circular azul por evento (add/edit/delete/refresh), tarjeta con autor (en primary) + acción + hora, cuerpo opcional con campos cambiados y nota, y **separadores por fecha** (píldora azul, `isoFormat('D MMM YYYY')` locale es). Todo en azul (default). Se usa en el histórico del **detalle de activo** y del **detalle de empleado** (reemplaza la lista `<ol>` anterior). **Requiere `npm run build` + `view:clear`.**
+
+### Sidebar estilo GLPI — grupos acordeón (2026-07-31)
+Reestructura de `layouts/includes/admin/sidebar.blade.php` para resolver la falta de espacio vertical en pantallas chicas:
+- Los encabezados con varios items se vuelven **grupos colapsables (acordeón)** con ícono propio; los de un solo item (Dashboard, Problemas, Reportes) quedan como **enlaces sueltos** de nivel superior.
+- **Un solo grupo abierto a la vez** (variable Alpine `group` en el `<ul>`): al abrir uno se cierra el anterior. Por defecto abre el grupo de la ruta actual (`$activeGroup`); para arrancar todo cerrado, poner `group: null`.
+- **Catálogos** es su propio grupo de nivel superior (icono `ri-list-settings-line`), fuera de Administración; sus hijos son la lista de catálogos (sin icono individual). Administración queda con Usuarios, Configuración y Auditoría.
+- En **modo colapsado**, el flotante (`sidebarFlyout`) ahora muestra el nombre del grupo y sus opciones **con ícono**, resaltando al pasar el mouse; Catálogos aparece como subgrupo con su lista. Flotante con `max-h-80vh` + scroll.
+- Íconos de grupo: Inventario `ri-stack-line`, Gestión `ri-briefcase-4-line`, Herramientas `ri-tools-line`, Administración `ri-shield-keyhole-line`. **Requiere `npm run build` + `view:clear`.**
+
+### Branding / logos — referencias para manual (2026-07-30)
+Puntos donde aparece la marca (logo + nombre de empresa), tomados de settings (`company_logo`, `company_name`, con fallback a `<x-application-mark>` vía componente `<x-company-logo>`):
+- **Topbar**: `resources/views/layouts/includes/admin/navigation.blade.php` — logo en línea 16 (`h-10`), nombre en línea 18, subtítulo "Control de bienes informáticos" en línea 19. En el topbar conviene no exceder `h-10` (barra de alto fijo ~64px; un logo mayor empuja el contenido).
+- **Página de bienvenida** (`/`): `resources/views/welcome.blade.php` — logo en línea 36 (`h-14`), altura de la barra en línea 33 (`h-20`). Aquí hay más margen para agrandarlo.
+- **Login**: `resources/views/auth/login.blade.php` (panel de marca con `<x-company-logo>`).
+- **PDFs (cartas/reportes)**: el logo lo resuelve `ResponsiveLetterService::logoPath()` (settings `company_logo` o `company-logo-default.png`).
+Tamaños Tailwind: cada unidad de `h-N` = 4px (`h-8`=32px, `h-10`=40px, `h-12`=48px, `h-14`=56px). Cambios de logo/tamaño solo requieren `php artisan view:clear` (no `npm run build`).
+
 ### Dominio y ruta de producción (2026-07-30)
 Portal servido en **https://inventario-it.netjernetworks.net** (DNS interno, certificado **autofirmado**) desde **/var/www/html/inventario-it**. Se actualizaron: `deploy/apache-inventario.conf` y `apache-inventario-ssl.conf` (ServerName + DocumentRoot/Directory a `/var/www/html/...`), `deploy/make-selfsigned-cert.sh` (CN por defecto = dominio), `deploy/env.production.example` (APP_URL + MAIL_FROM), `deploy/crontab.example` (rutas), `docs/DESPLIEGUE.md` (rutas, ServerName, comandos de cert y prueba). `deploy.sh` y `backup.sh` son agnósticos a la ruta (derivan APP_DIR de su ubicación). En el servidor: fijar `APP_URL` en `.env`, regenerar el certificado con el CN nuevo, copiar los VirtualHost, `a2ensite`, `apache2ctl configtest`, `reload`, y `php artisan config:cache`.
 

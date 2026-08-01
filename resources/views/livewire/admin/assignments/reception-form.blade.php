@@ -1,5 +1,5 @@
 <div>
-    <x-slide-over model="open" title="Recepción de bienes (salida del colaborador)" width="max-w-xl">
+    <x-slide-over model="open" title="Recepción de bienes (salida del colaborador)" width="max-w-xl" icon="ri-inbox-archive-line">
         <form wire:submit="save" class="space-y-4">
             <div>
                 <label class="form-label">Empleado <span class="text-error">*</span></label>

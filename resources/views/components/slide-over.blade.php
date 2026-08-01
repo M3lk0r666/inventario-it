@@ -1,4 +1,4 @@
-@props(['model' => 'open', 'title' => '', 'width' => 'max-w-lg'])
+@props(['model' => 'open', 'title' => '', 'width' => 'max-w-lg', 'icon' => null])
 
 {{-- Panel lateral deslizante reutilizable. Se controla con una propiedad booleana Livewire ($model). --}}
 <div x-data="{ open: @entangle($model) }"
@@ -24,8 +24,16 @@
             class="w-screen {{ $width }}">
             <div class="flex h-full flex-col bg-white shadow-xl">
                 <div class="flex items-center justify-between border-b border-border-soft px-4 py-3">
-                    <h2 class="text-headline-sm text-on-surface" id="slide-over-title">{{ $title }}</h2>
-                    <button type="button" class="p-1.5 text-outline hover:text-on-surface rounded-lg" @click="open = false">
+                    <div class="flex items-center gap-3 min-w-0">
+                        @if ($icon)
+                            {{-- Distintivo estilo GLPI: icono en un badge azul --}}
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-white">
+                                <i class="{{ $icon }} text-lg"></i>
+                            </span>
+                        @endif
+                        <h2 class="text-headline-sm text-on-surface truncate" id="slide-over-title">{{ $title }}</h2>
+                    </div>
+                    <button type="button" class="p-1.5 text-outline hover:text-on-surface rounded-lg shrink-0" @click="open = false">
                         <span class="sr-only">Cerrar</span>
                         <i class="ri-close-line text-xl"></i>
                     </button>
