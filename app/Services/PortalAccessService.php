@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Mail\PortalAccessRevokedMail;
 use App\Mail\WelcomeUserMail;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
@@ -57,6 +58,31 @@ class PortalAccessService
             return [true, "Correo de acceso enviado a {$user->email}."];
         } catch (\Throwable $e) {
             return [false, 'Falló el envío: '.$e->getMessage()];
+        }
+    }
+
+    /**
+     * Notifica al usuario que su acceso al portal fue revocado. Se le pasan
+     * nombre y correo porque la cuenta pudo ya haberse eliminado.
+     *
+     * @return array{0:bool,1:string}
+     */
+    public function sendRevoked(string $name, ?string $email): array
+    {
+        if (blank($email)) {
+            return [false, 'El usuario no tenía correo, no se envió aviso.'];
+        }
+        if (! MailConfigurator::isReady()) {
+            return [false, 'El correo no está configurado, no se envió aviso.'];
+        }
+
+        try {
+            MailConfigurator::apply();
+            Mail::to($email)->send(new PortalAccessRevokedMail($name));
+
+            return [true, "Aviso de revocación enviado a {$email}."];
+        } catch (\Throwable $e) {
+            return [false, 'No se pudo enviar el aviso: '.$e->getMessage()];
         }
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Mail;
 
 use App\Models\Setting;
-use App\Models\User;
 use App\Support\MailTemplates;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -11,34 +10,26 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 
 /**
- * Notifica a un usuario que se le otorgó acceso al portal, con el enlace
- * para establecer su contraseña.
+ * Aviso al usuario de que su acceso al portal fue revocado.
  */
-class WelcomeUserMail extends Mailable
+class PortalAccessRevokedMail extends Mailable
 {
     use Queueable;
 
-    public function __construct(
-        public User $user,
-        public string $roleName,
-        public string $resetUrl,
-    ) {}
+    public function __construct(public string $userName) {}
 
     protected function vars(): array
     {
         return [
             '{empresa}' => Setting::get('company_name', config('app.name')),
-            '{empleado}' => $this->user->name,
-            '{correo}' => $this->user->email,
-            '{rol}' => $this->roleName,
-            '{portal}' => config('app.url'),
+            '{empleado}' => $this->userName,
         ];
     }
 
     public function envelope(): Envelope
     {
         $company = Setting::get('company_name', config('app.name'));
-        $subject = MailTemplates::render('access', 'subject', $this->vars());
+        $subject = MailTemplates::render('revoked', 'subject', $this->vars());
 
         return new Envelope(subject: "[{$company}] {$subject}");
     }
@@ -47,13 +38,13 @@ class WelcomeUserMail extends Mailable
     {
         $vars = $this->vars();
 
-        return new Content(view: 'emails.welcome-user', with: [
+        return new Content(view: 'emails.portal-revoked', with: [
             'companyName' => Setting::get('company_name', config('app.name')),
             'supportEmail' => Setting::get('mail_from_address', config('mail.from.address')),
             'accent' => MailTemplates::accentColor(),
-            'intro' => MailTemplates::render('access', 'intro', $vars),
-            'note' => MailTemplates::render('access', 'note', $vars),
-            'portalUrl' => config('app.url'),
+            'intro' => MailTemplates::render('revoked', 'intro', $vars),
+            'note' => MailTemplates::render('revoked', 'note', $vars),
+            'userName' => $this->userName,
         ]);
     }
 }

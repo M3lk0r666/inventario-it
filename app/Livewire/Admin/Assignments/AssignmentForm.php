@@ -7,10 +7,13 @@ use App\Models\Asset;
 use App\Models\AssetStatus;
 use App\Models\Assignment;
 use App\Models\Employee;
+use App\Mail\AssignmentNotificationMail;
 use App\Models\ResponsiveLetter;
+use App\Services\MailConfigurator;
 use App\Services\ResponsiveLetterService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -36,6 +39,10 @@ class AssignmentForm extends Component
 
     public bool $generateLetter = true;
 
+    public bool $notifyEmployee = true;
+
+    public bool $notifyManager = true;
+
     /** @var int[] IDs de activos seleccionados */
     public array $selectedAssets = [];
 
@@ -56,6 +63,8 @@ class AssignmentForm extends Component
         $this->assignedAt = now()->format('Y-m-d');
         $this->condition = 'Bueno';
         $this->generateLetter = auth()->user()->can('responsive_letters.create');
+        $this->notifyEmployee = true;
+        $this->notifyManager = true;
 
         if ($assetId && $this->isAvailable($assetId)) {
             $this->selectedAssets = [$assetId];
@@ -166,6 +175,16 @@ class AssignmentForm extends Component
             $letters->generatePdf($letter);
         }
 
+        // Avisos por correo (si se solicitó y hay carta generada)
+        $emailResult = null;
+        $managerResult = null;
+        if ($letter && $this->notifyEmployee) {
+            $emailResult = $this->sendAssignmentEmail($letter);
+        }
+        if ($letter && $this->notifyManager) {
+            $managerResult = $this->sendManagerAssignmentEmail($letter);
+        }
+
         $this->open = false;
         $this->dispatch('assignment-saved');
         $this->dispatch('asset-saved');
@@ -175,6 +194,69 @@ class AssignmentForm extends Component
             $this->dispatch('open-url', url: route('admin.letters.pdf', $letter->id));
         } else {
             $this->dispatch('toast', type: 'success', message: 'Asignación registrada.');
+        }
+
+        foreach ([$emailResult, $managerResult] as $result) {
+            if ($result !== null) {
+                [$ok, $msg] = $result;
+                $this->dispatch('toast', type: $ok ? 'success' : 'error', message: $msg);
+            }
+        }
+    }
+
+    /**
+     * Copia informativa al jefe inmediato del empleado.
+     *
+     * @return array{0:bool,1:string}|null
+     */
+    protected function sendManagerAssignmentEmail(ResponsiveLetter $letter): ?array
+    {
+        $manager = $letter->employee?->manager;
+
+        if (! $manager) {
+            return null; // sin jefe inmediato: nada que notificar
+        }
+        if (blank($manager->email)) {
+            return [false, 'El jefe inmediato no tiene correo; no se le notificó.'];
+        }
+        if (! MailConfigurator::isReady()) {
+            return null; // el correo no está configurado (ya se informa en el aviso al empleado)
+        }
+
+        try {
+            MailConfigurator::apply();
+            Mail::to($manager->email)->send(new AssignmentNotificationMail($letter, toManager: true));
+
+            return [true, "Copia enviada al jefe inmediato ({$manager->name})."];
+        } catch (\Throwable $e) {
+            return [false, 'No se pudo notificar al jefe inmediato: '.$e->getMessage()];
+        }
+    }
+
+    /**
+     * Envía al empleado el aviso de bienes asignados (versión digerible de la
+     * carta). Requiere que el empleado tenga correo y que el correo esté configurado.
+     *
+     * @return array{0:bool,1:string}
+     */
+    protected function sendAssignmentEmail(ResponsiveLetter $letter): array
+    {
+        $employee = $letter->employee;
+
+        if (blank($employee?->email)) {
+            return [false, 'No se notificó por correo: el empleado no tiene correo registrado.'];
+        }
+        if (! MailConfigurator::isReady()) {
+            return [false, 'No se notificó por correo: el correo no está configurado (Configuración → Correo).'];
+        }
+
+        try {
+            MailConfigurator::apply();
+            Mail::to($employee->email)->send(new AssignmentNotificationMail($letter));
+
+            return [true, "Aviso enviado al correo de {$employee->name} ({$employee->email})."];
+        } catch (\Throwable $e) {
+            return [false, 'No se pudo enviar el aviso por correo: '.$e->getMessage()];
         }
     }
 
@@ -196,6 +278,8 @@ class AssignmentForm extends Component
 
     public function render()
     {
+        $selectedEmployee = $this->employeeId ? Employee::with('manager')->find($this->employeeId) : null;
+
         $available = Asset::with(['type', 'model.manufacturer'])
             ->whereDoesntHave('currentAssignment')
             ->whereHas('status', fn ($q) => $q->where('is_assignable', true))
@@ -214,6 +298,9 @@ class AssignmentForm extends Component
             'selected' => Asset::with(['type'])->whereIn('id', $this->selectedAssets)->orderBy('asset_tag')->get(),
             'conditions' => self::CONDITIONS,
             'additionalTypes' => AdditionalItemType::where('is_active', true)->orderBy('name')->get(),
+            'mailReady' => MailConfigurator::isReady(),
+            'employeeEmail' => $selectedEmployee?->email,
+            'manager' => $selectedEmployee?->manager,
         ]);
     }
 }

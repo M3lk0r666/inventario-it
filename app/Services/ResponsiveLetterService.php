@@ -49,6 +49,7 @@ class ResponsiveLetterService
         '{no_empleado}' => 'Número de empleado',
         '{puesto}' => 'Puesto',
         '{departamento}' => 'Departamento',
+        '{jefe_inmediato}' => 'Jefe inmediato',
         '{empresa}' => 'Nombre de la empresa',
         '{fecha}' => 'Fecha de emisión',
         '{folio}' => 'Folio de la carta',
@@ -93,7 +94,7 @@ class ResponsiveLetterService
     public function generatePdf(ResponsiveLetter $letter): string
     {
         $letter->loadMissing([
-            'employee.department', 'employee.location',
+            'employee.department', 'employee.location', 'employee.manager',
             'assignments.asset.type', 'assignments.asset.model.manufacturer',
             'returnedAssignments.asset.type', 'returnedAssignments.asset.model.manufacturer',
             'items.type', 'createdBy',
@@ -132,6 +133,7 @@ class ResponsiveLetterService
             '{no_empleado}' => $e?->employee_number ?? '',
             '{puesto}' => $e?->position ?? '',
             '{departamento}' => $e?->department?->name ?? '',
+            '{jefe_inmediato}' => $e?->manager?->name ?? '',
             '{empresa}' => Setting::get('company_name', config('app.name')),
             '{fecha}' => $letter->issued_at?->format('d/m/Y') ?? '',
             '{folio}' => $letter->folio,

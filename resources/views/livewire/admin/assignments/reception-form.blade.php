@@ -92,13 +92,57 @@
                     placeholder="Condiciones de la recepción, faltantes, daños…"></textarea>
             </div>
 
-            @can('responsive_letters.create')
-                <label class="inline-flex items-center gap-2 text-body-md text-on-surface">
-                    <input type="checkbox" wire:model="generateLetter"
-                        class="rounded border-border-soft text-primary-container focus:ring-primary-container">
-                    Generar carta de recepción (PDF con folio consecutivo)
+            <div class="space-y-2">
+                @can('responsive_letters.create')
+                    <label class="inline-flex items-center gap-2 text-body-md text-on-surface">
+                        <input type="checkbox" wire:model="generateLetter"
+                            class="rounded border-border-soft text-primary-container focus:ring-primary-container">
+                        Generar carta de recepción (PDF con folio consecutivo)
+                    </label>
+                @endcan
+
+                <label class="flex items-start gap-2 text-body-md text-on-surface">
+                    <input type="checkbox" wire:model="notifyEmployee"
+                        class="mt-0.5 rounded border-border-soft text-primary-container focus:ring-primary-container">
+                    <span>
+                        Notificar al empleado por correo
+                        <span class="block text-body-sm text-on-surface-variant">
+                            Envía un aviso de los bienes recibidos al correo del empleado.
+                            @if (! $mailReady)
+                                <span class="text-alert">El correo no está configurado (Configuración → Correo).</span>
+                            @elseif ($employeeId && blank($employeeEmail))
+                                <span class="text-alert">El empleado seleccionado no tiene correo registrado.</span>
+                            @elseif ($employeeEmail)
+                                Se enviará a <span class="font-medium">{{ $employeeEmail }}</span>.
+                            @endif
+                        </span>
+                    </span>
                 </label>
-            @endcan
+
+                {{-- Notificación al jefe inmediato --}}
+                @if ($manager)
+                    <div class="rounded-lg border border-border-soft bg-surface-container-low/40 p-3">
+                        <div class="mb-1 text-body-sm text-on-surface-variant">
+                            Jefe inmediato:
+                            <span class="font-medium text-on-surface">{{ $manager->name }}</span>
+                        </div>
+                        <label class="flex items-start gap-2 text-body-md text-on-surface">
+                            <input type="checkbox" wire:model="notifyManager"
+                                class="mt-0.5 rounded border-border-soft text-primary-container focus:ring-primary-container">
+                            <span>
+                                Notificar al jefe inmediato
+                                <span class="block text-body-sm text-on-surface-variant">
+                                    @if (blank($manager->email))
+                                        <span class="text-alert">El jefe inmediato no tiene correo registrado.</span>
+                                    @else
+                                        Copia informativa a <span class="font-medium">{{ $manager->email }}</span>.
+                                    @endif
+                                </span>
+                            </span>
+                        </label>
+                    </div>
+                @endif
+            </div>
 
             <div class="flex justify-end gap-2 border-t border-border-soft pt-4">
                 <button type="button" class="btn-ghost" wire:click="$set('open', false)">Cancelar</button>

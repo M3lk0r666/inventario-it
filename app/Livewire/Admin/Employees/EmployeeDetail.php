@@ -54,7 +54,7 @@ class EmployeeDetail extends Component
     public function getEmployeeProperty(): Employee
     {
         return Employee::with([
-            'department', 'location', 'user.roles',
+            'department', 'location', 'manager', 'user.roles',
             'accounts',
             'assignments.asset.type', 'assignments.responsiveLetter',
             'responsiveLetters.items.type',
@@ -204,7 +204,7 @@ class EmployeeDetail extends Component
         $this->confirmingRevoke = true;
     }
 
-    public function revokeAccess(): void
+    public function revokeAccess(PortalAccessService $portal): void
     {
         $this->authorize('employees.edit');
         abort_unless(auth()->user()->can('users.delete'), 403);
@@ -213,10 +213,17 @@ class EmployeeDetail extends Component
         $user = $employee->user;
 
         if ($user && ! $user->is_protected) {
+            // Capturar datos antes de eliminar la cuenta para poder avisar.
+            $name = $user->name;
+            $email = $user->email;
+
             $employee->update(['user_id' => null]);
             $user->delete();
             $this->confirmingRevoke = false;
             $this->dispatch('toast', type: 'success', message: 'Acceso al portal revocado.');
+
+            [$ok, $msg] = $portal->sendRevoked($name, $email);
+            $this->dispatch('toast', type: $ok ? 'success' : 'error', message: $msg);
 
             return;
         }

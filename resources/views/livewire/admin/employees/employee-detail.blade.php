@@ -62,6 +62,7 @@
                         'Puesto' => $employee->position,
                         'Departamento' => $employee->department?->name,
                         'Ubicación' => $employee->location?->name,
+                        'Jefe inmediato' => $employee->manager?->name,
                         'Correo' => $employee->email,
                         'Teléfono' => $employee->phone,
                         'Extensión Zoom' => $employee->zoom_extension,

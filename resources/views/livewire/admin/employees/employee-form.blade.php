@@ -70,6 +70,18 @@
                 </div>
             </div>
 
+            <div>
+                <label class="form-label">Jefe inmediato</label>
+                <select wire:model="data.manager_id" class="form-input">
+                    <option value="">— Sin jefe inmediato —</option>
+                    @foreach ($managers as $value => $label)
+                        <option value="{{ $value }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+                <p class="form-help">Se incluye en las cartas responsivas y puede recibir aviso de los movimientos de bienes.</p>
+                @error('data.manager_id') <p class="form-error">{{ $message }}</p> @enderror
+            </div>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="form-label">Correo</label>

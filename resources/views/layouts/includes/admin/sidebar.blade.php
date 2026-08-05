@@ -75,6 +75,7 @@
             'items' => [
                 ['name' => 'Usuarios', 'icon' => 'ri-user-settings-line', 'can' => 'users.view', 'route' => 'admin.users.index'],
                 ['name' => 'Configuración', 'icon' => 'ri-settings-3-line', 'can' => 'settings.view', 'route' => 'admin.settings.index'],
+                ['name' => 'Plantillas de correo', 'icon' => 'ri-mail-settings-line', 'can' => 'settings.view', 'route' => 'admin.settings.email-templates'],
                 ['name' => 'Auditoría', 'icon' => 'ri-history-line', 'can' => 'activity.view', 'route' => 'admin.audit.index'],
             ],
         ],

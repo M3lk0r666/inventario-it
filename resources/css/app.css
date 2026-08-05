@@ -8,6 +8,15 @@
 
 /* ===== Sidebar colapsable (sm+) ===== */
 @media (min-width: 640px) {
+    /* Margen del contenido según el ancho del sidebar (sin depender de Alpine
+       en el contenedor, para no interferir con el x-data propio de cada página). */
+    .main-content {
+        margin-left: 16rem;
+    }
+    body:has(aside.sidebar-collapsed) .main-content {
+        margin-left: 4rem;
+    }
+
     aside.sidebar-collapsed {
         width: 4rem;
     }

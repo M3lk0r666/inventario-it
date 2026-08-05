@@ -18,7 +18,7 @@ class Employee extends Model
 
     protected $fillable = [
         'employee_number', 'name', 'position', 'department_id', 'location_id',
-        'email', 'phone', 'zoom_extension', 'status', 'user_id', 'notes',
+        'manager_id', 'email', 'phone', 'zoom_extension', 'status', 'user_id', 'notes',
     ];
 
     public function department(): BelongsTo
@@ -29,6 +29,18 @@ class Employee extends Model
     public function location(): BelongsTo
     {
         return $this->belongsTo(Location::class);
+    }
+
+    /** Jefe inmediato (otro empleado). */
+    public function manager(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class, 'manager_id');
+    }
+
+    /** Empleados que reportan a este. */
+    public function subordinates(): HasMany
+    {
+        return $this->hasMany(Employee::class, 'manager_id');
     }
 
     /** Cuenta de acceso al sistema (opcional). */

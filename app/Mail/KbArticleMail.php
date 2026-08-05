@@ -30,6 +30,8 @@ class KbArticleMail extends Mailable
     {
         return new Content(view: 'emails.kb-article', with: [
             'companyName' => Setting::get('company_name', config('app.name')),
+            'supportEmail' => Setting::get('mail_from_address', config('mail.from.address')),
+            'accent' => \App\Support\MailTemplates::accentColor(),
         ]);
     }
 }

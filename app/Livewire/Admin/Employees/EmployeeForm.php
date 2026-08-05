@@ -32,8 +32,9 @@ class EmployeeForm extends Component
         $this->editingId = $id;
         $this->data = [
             'employee_number' => null, 'name' => null, 'position' => null,
-            'department_id' => null, 'location_id' => null, 'email' => null,
-            'phone' => null, 'zoom_extension' => null, 'status' => 'active', 'notes' => null,
+            'department_id' => null, 'location_id' => null, 'manager_id' => null,
+            'email' => null, 'phone' => null, 'zoom_extension' => null,
+            'status' => 'active', 'notes' => null,
         ];
 
         if ($id) {
@@ -84,6 +85,7 @@ class EmployeeForm extends Component
             'data.position' => ['nullable', 'string', 'max:255'],
             'data.department_id' => ['nullable', 'integer', 'exists:departments,id'],
             'data.location_id' => ['nullable', 'integer', 'exists:locations,id'],
+            'data.manager_id' => ['nullable', 'integer', 'exists:employees,id', Rule::notIn([$this->editingId])],
             'data.email' => ['nullable', 'email', 'max:255', Rule::unique('employees', 'email')->ignore($this->editingId)],
             'data.phone' => ['nullable', 'string', 'max:30'],
             'data.zoom_extension' => ['nullable', 'string', 'max:20'],
@@ -92,6 +94,7 @@ class EmployeeForm extends Component
         ], [], [
             'data.employee_number' => 'número de empleado', 'data.name' => 'nombre', 'data.position' => 'puesto',
             'data.department_id' => 'departamento', 'data.location_id' => 'ubicación', 'data.email' => 'correo',
+            'data.manager_id' => 'jefe inmediato',
             'data.phone' => 'teléfono', 'data.zoom_extension' => 'extensión Zoom', 'data.status' => 'estado',
         ]);
 
@@ -159,6 +162,10 @@ class EmployeeForm extends Component
         return view('livewire.admin.employees.employee-form', [
             'departments' => CatalogRegistry::options('departamentos'),
             'locations' => CatalogRegistry::options('ubicaciones'),
+            // Posibles jefes: cualquier empleado activo, excepto el que se edita.
+            'managers' => Employee::where('status', 'active')
+                ->when($this->editingId, fn ($q) => $q->where('id', '!=', $this->editingId))
+                ->orderBy('name')->pluck('name', 'id'),
         ]);
     }
 }

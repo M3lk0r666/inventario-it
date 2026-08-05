@@ -76,8 +76,10 @@
             <td>{{ $letter->issued_at?->format('d/M/Y') }}</td>
         </tr>
         <tr>
+            <td class="info-label">Jefe Inmediato:</td>
+            <td>{{ $letter->employee->manager?->name ?? '—' }}</td>
             <td class="info-label">Correo Corporativo:</td>
-            <td colspan="3">{{ $letter->employee->email ?? '—' }}</td>
+            <td>{{ $letter->employee->email ?? '—' }}</td>
         </tr>
     </table>
 

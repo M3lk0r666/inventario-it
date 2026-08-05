@@ -43,7 +43,7 @@
 
     @include('layouts.includes.admin.sidebar')
 
-    <div class="p-4 transition-all duration-200" x-data :class="$store.sidebar.collapsed ? 'sm:ml-16' : 'sm:ml-64'">
+    <div {{ $attributes->merge(['class' => 'p-4 transition-all duration-200 main-content']) }}>
         <div class="mt-14">
             @include('layouts.includes.admin.breadcrumbs')
         </div>

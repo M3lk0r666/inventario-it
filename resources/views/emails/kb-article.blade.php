@@ -1,27 +1,21 @@
-<!DOCTYPE html>
-<html lang="es">
-<head><meta charset="utf-8"><title>{{ $article->title }}</title></head>
-<body style="margin:0;padding:0;background:#f4f5f7;font-family:Arial,Helvetica,sans-serif;color:#191b23;">
-    <div style="max-width:680px;margin:0 auto;padding:24px;">
-        <div style="background:#003d9b;color:#fff;padding:16px 20px;border-radius:8px 8px 0 0;">
-            <p style="margin:0;font-size:12px;opacity:.85;">{{ $companyName }} · Base de conocimientos TI</p>
-            <h1 style="margin:6px 0 0;font-size:20px;">{{ $article->title }}</h1>
-        </div>
-        <div style="background:#fff;border:1px solid #DFE1E6;border-top:0;border-radius:0 0 8px 8px;padding:24px;">
-            @if ($customMessage)
-                <div style="background:#f3f3fd;border-left:4px solid #0052cc;padding:12px 14px;margin-bottom:20px;font-size:14px;">
-                    {{ $customMessage }}
-                    <div style="margin-top:6px;font-size:12px;color:#737685;">— {{ $senderName }}</div>
-                </div>
-            @endif
+<x-mail.shell :companyName="$companyName" subtitle="Base de conocimientos TI" :supportEmail="$supportEmail" :width="820"
+    :footnote="'Enviado por '.$senderName.' desde '.$companyName.'. Si necesitas apoyo, contacta al área de TI.'">
 
-            <div style="font-size:14px;line-height:1.6;">
-                {!! $article->body !!}
-            </div>
-        </div>
-        <p style="text-align:center;font-size:11px;color:#737685;margin-top:12px;">
-            Enviado por {{ $senderName }} desde {{ config('app.name') }}. Si necesitas apoyo, contacta al área de TI.
-        </p>
+    <h1 style="font-size:22px;font-weight:700;color:#111827;margin:0 0 16px;line-height:1.25;">{{ $article->title }}</h1>
+
+    @if ($customMessage)
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 22px;">
+            <tr>
+                <td style="background:#eef3fb;border-left:4px solid {{ $accent ?? '#0b56c4' }};border-radius:8px;padding:14px 16px;font-size:14px;line-height:1.6;color:#33415c;">
+                    {{ $customMessage }}
+                    <div style="margin-top:8px;font-size:12px;color:#6b7280;">— {{ $senderName }}</div>
+                </td>
+            </tr>
+        </table>
+    @endif
+
+    {{-- Contenido del artículo (HTML enriquecido) --}}
+    <div style="font-size:15px;line-height:1.7;color:#2b2f38;">
+        {!! $article->body !!}
     </div>
-</body>
-</html>
+</x-mail.shell>

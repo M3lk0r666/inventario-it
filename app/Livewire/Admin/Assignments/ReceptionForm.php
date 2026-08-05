@@ -6,10 +6,13 @@ use App\Models\AdditionalItemType;
 use App\Models\AssetStatus;
 use App\Models\Assignment;
 use App\Models\Employee;
+use App\Mail\ReceptionNotificationMail;
 use App\Models\ResponsiveLetter;
+use App\Services\MailConfigurator;
 use App\Services\ResponsiveLetterService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -34,6 +37,10 @@ class ReceptionForm extends Component
 
     public bool $generateLetter = true;
 
+    public bool $notifyEmployee = true;
+
+    public bool $notifyManager = true;
+
     /** @var array<int,bool> assignment_id => marcado */
     public array $selectedAssignments = [];
 
@@ -55,6 +62,8 @@ class ReceptionForm extends Component
         $this->returnedAt = now()->format('Y-m-d');
         $this->newStatusId = AssetStatus::where('slug', 'resguardo')->value('id');
         $this->generateLetter = auth()->user()->can('responsive_letters.create');
+        $this->notifyEmployee = true;
+        $this->notifyManager = true;
         $this->open = true;
     }
 
@@ -156,6 +165,16 @@ class ReceptionForm extends Component
             $letters->generatePdf($letter);
         }
 
+        // Avisos por correo de la recepción
+        $emailResult = null;
+        $managerResult = null;
+        if ($this->notifyEmployee) {
+            $emailResult = $this->sendReceptionEmail($chosen, $letter, toManager: false);
+        }
+        if ($this->notifyManager) {
+            $managerResult = $this->sendReceptionEmail($chosen, $letter, toManager: true);
+        }
+
         $this->open = false;
         $this->dispatch('assignment-saved');
         $this->dispatch('asset-saved');
@@ -165,6 +184,54 @@ class ReceptionForm extends Component
             $this->dispatch('open-url', url: route('admin.letters.pdf', $letter->id));
         } else {
             $this->dispatch('toast', type: 'success', message: 'Recepción registrada.');
+        }
+
+        foreach ([$emailResult, $managerResult] as $result) {
+            if ($result !== null) {
+                [$ok, $msg] = $result;
+                $this->dispatch('toast', type: $ok ? 'success' : 'error', message: $msg);
+            }
+        }
+    }
+
+    /**
+     * Notifica la recepción de bienes por correo, al empleado o a su jefe inmediato.
+     *
+     * @param  int[]  $assignmentIds
+     * @return array{0:bool,1:string}|null
+     */
+    protected function sendReceptionEmail(array $assignmentIds, ?ResponsiveLetter $letter, bool $toManager): ?array
+    {
+        $employee = Employee::with('manager')->find($this->employeeId);
+        $recipient = $toManager ? $employee?->manager : $employee;
+
+        if ($toManager && ! $recipient) {
+            return null; // sin jefe inmediato: nada que notificar
+        }
+        if (blank($recipient?->email)) {
+            $quien = $toManager ? 'el jefe inmediato' : 'el empleado';
+
+            return [false, "No se notificó por correo: {$quien} no tiene correo registrado."];
+        }
+        if (! MailConfigurator::isReady()) {
+            return $toManager ? null : [false, 'No se notificó por correo: el correo no está configurado (Configuración → Correo).'];
+        }
+
+        try {
+            MailConfigurator::apply();
+            $assignments = Assignment::with('asset.type')->whereIn('id', $assignmentIds)->get();
+            $items = $letter ? $letter->items()->with('type')->get() : collect();
+
+            Mail::to($recipient->email)->send(new ReceptionNotificationMail(
+                $employee, $assignments, $items, $letter?->folio, $this->returnedAt,
+                toManager: $toManager, managerName: $employee?->manager?->name
+            ));
+
+            return $toManager
+                ? [true, "Copia de recepción enviada al jefe inmediato ({$recipient->name})."]
+                : [true, "Aviso de recepción enviado a {$recipient->name} ({$recipient->email})."];
+        } catch (\Throwable $e) {
+            return [false, 'No se pudo enviar el aviso por correo: '.$e->getMessage()];
         }
     }
 
@@ -186,6 +253,8 @@ class ReceptionForm extends Component
 
     public function render()
     {
+        $selectedEmployee = $this->employeeId ? Employee::with('manager')->find($this->employeeId) : null;
+
         return view('livewire.admin.assignments.reception-form', [
             'employees' => Employee::whereHas('assignments', fn ($q) => $q->whereNull('returned_at'))
                 ->orderBy('name')->pluck('name', 'id'),
@@ -193,6 +262,9 @@ class ReceptionForm extends Component
             'statuses' => \App\Support\CatalogRegistry::options('estados-de-activo'),
             'conditionOptions' => AssignmentForm::CONDITIONS,
             'additionalTypes' => AdditionalItemType::where('is_active', true)->orderBy('name')->get(),
+            'mailReady' => MailConfigurator::isReady(),
+            'employeeEmail' => $selectedEmployee?->email,
+            'manager' => $selectedEmployee?->manager,
         ]);
     }
 }
