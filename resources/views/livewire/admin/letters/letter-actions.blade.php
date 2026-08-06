@@ -12,8 +12,9 @@
                         <h3 class="text-title-md text-on-surface">Anular carta responsiva</h3>
                         <p class="mt-1 text-body-md text-on-surface-variant">
                             La carta <span class="font-semibold text-on-surface font-mono text-mono-sm">{{ $cancelFolio }}</span>
-                            quedará anulada y su PDF llevará la marca de <strong>ANULADA</strong>.
-                            Las asignaciones no se modifican.
+                            quedará anulada y su PDF llevará la marca de <strong>ANULADA</strong> (el folio se conserva).
+                            Si es una <strong>carta de entrega</strong>, se <strong>liberarán los activos</strong> aún asignados
+                            (se deshace la asignación).
                         </p>
                     </div>
                 </div>

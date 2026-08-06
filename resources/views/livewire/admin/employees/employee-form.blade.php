@@ -1,6 +1,18 @@
 <div>
     <x-slide-over model="open" :title="$editingId ? 'Editar empleado' : 'Nuevo empleado'" width="max-w-xl" icon="ri-team-line">
-        <form wire:submit="save" class="space-y-4">
+        <form wire:submit="save" x-data="{ tab: 'main' }" class="space-y-4">
+            {{-- Pestañas --}}
+            <div class="flex gap-1 border-b border-border-soft">
+                <button type="button" @click="tab = 'main'"
+                    :class="tab === 'main' ? 'border-primary text-primary font-medium' : 'border-transparent text-on-surface-variant'"
+                    class="px-3 py-2 -mb-px border-b-2 text-body-md transition-colors">Datos</button>
+                <button type="button" @click="tab = 'emergency'"
+                    :class="tab === 'emergency' ? 'border-primary text-primary font-medium' : 'border-transparent text-on-surface-variant'"
+                    class="px-3 py-2 -mb-px border-b-2 text-body-md transition-colors">Contacto de emergencia</button>
+            </div>
+
+            {{-- DATOS --}}
+            <div x-show="tab === 'main'" class="space-y-4">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="form-label">Número de empleado <span class="text-error">*</span></label>
@@ -103,6 +115,32 @@
             <div>
                 <label class="form-label">Notas</label>
                 <textarea wire:model="data.notes" rows="2" class="form-input"></textarea>
+            </div>
+            </div>{{-- /DATOS --}}
+
+            {{-- CONTACTO DE EMERGENCIA --}}
+            <div x-show="tab === 'emergency'" x-cloak class="space-y-4">
+                <p class="text-body-sm text-on-surface-variant">
+                    <i class="ri-first-aid-kit-line mr-1 text-primary"></i>
+                    Persona a contactar en caso de emergencia. Todos los campos son opcionales.
+                </p>
+                <div>
+                    <label class="form-label">Nombre completo</label>
+                    <input type="text" wire:model="data.emergency_contact_name" class="form-input">
+                    @error('data.emergency_contact_name') <p class="form-error">{{ $message }}</p> @enderror
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Parentesco</label>
+                        <input type="text" wire:model="data.emergency_contact_relationship" class="form-input" placeholder="Ej. Cónyuge, Padre, Hermano">
+                        @error('data.emergency_contact_relationship') <p class="form-error">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" wire:model="data.emergency_contact_phone" class="form-input">
+                        @error('data.emergency_contact_phone') <p class="form-error">{{ $message }}</p> @enderror
+                    </div>
+                </div>
             </div>
 
             <div class="flex justify-end gap-2 border-t border-border-soft pt-4">

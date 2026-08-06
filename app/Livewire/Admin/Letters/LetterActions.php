@@ -2,9 +2,11 @@
 
 namespace App\Livewire\Admin\Letters;
 
+use App\Models\AssetStatus;
 use App\Models\ResponsiveLetter;
 use App\Services\ResponsiveLetterService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -48,14 +50,38 @@ class LetterActions extends Component
         $this->authorize('responsive_letters.cancel');
         $letter = ResponsiveLetter::findOrFail($this->cancelId);
 
+        $freed = 0;
         if ($letter->status !== 'cancelled') {
-            $letter->update(['status' => 'cancelled']);
+            $freed = DB::transaction(function () use ($letter) {
+                $letter->update(['status' => 'cancelled']);
+
+                // Al anular una carta de ENTREGA se deshace la asignación:
+                // se liberan los activos aún en poder del colaborador.
+                if ($letter->type !== 'delivery') {
+                    return 0;
+                }
+
+                $freeStatusId = AssetStatus::where('is_assignable', true)->orderBy('id')->value('id');
+                $active = $letter->assignments()->whereNull('returned_at')->with('asset')->get();
+
+                foreach ($active as $assignment) {
+                    if ($freeStatusId) {
+                        $assignment->asset?->update(['asset_status_id' => $freeStatusId]);
+                    }
+                    $assignment->delete();
+                }
+
+                return $active->count();
+            });
+
             $service->generatePdf($letter);
         }
 
         $this->cancelId = null;
         $this->dispatch('letters-updated');
-        $this->dispatch('toast', type: 'success', message: "Carta {$letter->folio} anulada.");
+        $this->dispatch('asset-saved');
+        $msg = "Carta {$letter->folio} anulada.".($freed > 0 ? " Se liberaron {$freed} activo(s)." : '');
+        $this->dispatch('toast', type: 'success', message: $msg);
     }
 
     #[On('sign-letter')]

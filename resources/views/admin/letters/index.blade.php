@@ -30,4 +30,9 @@
 
     {{-- Modales compartidos: anular y subir carta firmada --}}
     <livewire:admin.letters.letter-actions />
+
+    {{-- Formulario de asignación (para corregir una carta de entrega) --}}
+    @can('assignments.edit')
+        <livewire:admin.assignments.assignment-form />
+    @endcan
 </x-admin-layout>

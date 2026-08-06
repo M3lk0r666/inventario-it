@@ -43,6 +43,9 @@ class AssignmentForm extends Component
 
     public bool $notifyManager = true;
 
+    /** Si se está corrigiendo una carta de entrega existente (conserva el folio). */
+    public ?int $editingLetterId = null;
+
     /** @var int[] IDs de activos seleccionados */
     public array $selectedAssets = [];
 
@@ -59,7 +62,7 @@ class AssignmentForm extends Component
     {
         $this->authorize('assignments.create');
         $this->resetValidation();
-        $this->reset('employeeId', 'notes', 'assetSearch', 'selectedAssets', 'additionalChecked', 'additionalValues');
+        $this->reset('employeeId', 'notes', 'assetSearch', 'selectedAssets', 'additionalChecked', 'additionalValues', 'editingLetterId');
         $this->assignedAt = now()->format('Y-m-d');
         $this->condition = 'Bueno';
         $this->generateLetter = auth()->user()->can('responsive_letters.create');
@@ -70,6 +73,42 @@ class AssignmentForm extends Component
             $this->selectedAssets = [$assetId];
         }
 
+        $this->open = true;
+    }
+
+    /**
+     * Corrección de una carta de entrega existente: se editan los datos y se
+     * regenera el PDF conservando el mismo folio. Solo cartas de entrega
+     * generadas y sin devoluciones registradas.
+     */
+    #[On('edit-assignment')]
+    public function openEdit(int $letterId): void
+    {
+        $this->authorize('assignments.edit');
+        $this->resetValidation();
+        $this->reset('employeeId', 'notes', 'assetSearch', 'selectedAssets', 'additionalChecked', 'additionalValues');
+
+        $letter = ResponsiveLetter::with(['items', 'assignments' => fn ($q) => $q->whereNull('returned_at')])
+            ->findOrFail($letterId);
+
+        abort_if($letter->type !== 'delivery' || $letter->status !== 'generated', 422);
+        abort_if($letter->assignments()->whereNotNull('returned_at')->exists(), 422, 'La carta tiene bienes ya devueltos.');
+
+        $this->editingLetterId = $letter->id;
+        $this->employeeId = $letter->employee_id;
+        $this->assignedAt = $letter->issued_at?->format('Y-m-d') ?? now()->format('Y-m-d');
+        $this->condition = $letter->assignments->first()?->condition_on_assign ?? 'Bueno';
+        $this->notes = $letter->notes ?? '';
+        $this->selectedAssets = $letter->assignments->pluck('asset_id')->map(fn ($id) => (int) $id)->all();
+
+        foreach ($letter->items as $item) {
+            $this->additionalChecked[$item->additional_item_type_id] = true;
+            $this->additionalValues[$item->additional_item_type_id] = $item->value;
+        }
+
+        $this->generateLetter = true;
+        $this->notifyEmployee = false;
+        $this->notifyManager = false;
         $this->open = true;
     }
 
@@ -96,6 +135,12 @@ class AssignmentForm extends Component
 
     public function save(ResponsiveLetterService $letters): void
     {
+        if ($this->editingLetterId) {
+            $this->saveEdit($letters);
+
+            return;
+        }
+
         $this->authorize('assignments.create');
 
         $this->validate([
@@ -202,6 +247,117 @@ class AssignmentForm extends Component
                 $this->dispatch('toast', type: $ok ? 'success' : 'error', message: $msg);
             }
         }
+    }
+
+    /**
+     * Corrección de una carta de entrega: edita empleado, activos, bienes
+     * adicionales y datos, y regenera el PDF conservando el mismo folio.
+     */
+    protected function saveEdit(ResponsiveLetterService $letters): void
+    {
+        $this->authorize('assignments.edit');
+
+        $this->validate([
+            'employeeId' => ['required', 'integer', 'exists:employees,id'],
+            'assignedAt' => ['required', 'date'],
+            'condition' => ['required', 'string', 'max:100'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+            'selectedAssets' => ['required', 'array', 'min:1'],
+            'selectedAssets.*' => ['integer', 'exists:assets,id'],
+        ], [
+            'selectedAssets.required' => 'Selecciona al menos un activo.',
+            'selectedAssets.min' => 'Selecciona al menos un activo.',
+        ], [
+            'employeeId' => 'empleado', 'assignedAt' => 'fecha de entrega', 'condition' => 'estado físico',
+        ]);
+
+        $letter = ResponsiveLetter::findOrFail($this->editingLetterId);
+        abort_if($letter->type !== 'delivery' || $letter->status !== 'generated', 422);
+
+        $current = Assignment::where('responsive_letter_id', $letter->id)
+            ->whereNull('returned_at')->get()->keyBy('asset_id');
+        $currentIds = $current->keys()->map(fn ($id) => (int) $id)->all();
+        $selected = array_map('intval', $this->selectedAssets);
+
+        $toAdd = array_diff($selected, $currentIds);
+        $toRemove = array_diff($currentIds, $selected);
+        $toKeep = array_intersect($selected, $currentIds);
+
+        // Los activos nuevos deben estar disponibles.
+        foreach ($toAdd as $assetId) {
+            if (! $this->isAvailable($assetId)) {
+                $tag = Asset::find($assetId)?->asset_tag ?? "#{$assetId}";
+                $this->addError('selectedAssets', "El activo {$tag} ya no está disponible.");
+
+                return;
+            }
+        }
+
+        $assignedStatusId = AssetStatus::where('slug', 'asignado')->value('id');
+        $freeStatusId = AssetStatus::where('is_assignable', true)->orderBy('id')->value('id');
+        $selectedAdditional = $this->collectAdditional();
+
+        DB::transaction(function () use ($letter, $current, $toAdd, $toRemove, $toKeep, $assignedStatusId, $freeStatusId, $selectedAdditional) {
+            // Datos de la carta
+            $letter->update([
+                'employee_id' => $this->employeeId,
+                'issued_at' => $this->assignedAt,
+                'notes' => $this->notes ?: null,
+            ]);
+
+            // Bienes adicionales: se rehacen
+            $letter->items()->delete();
+            foreach ($selectedAdditional as $additional) {
+                $letter->items()->create([
+                    'additional_item_type_id' => $additional['id'],
+                    'value' => $additional['value'],
+                ]);
+            }
+
+            // Activos quitados: liberar y eliminar su asignación
+            foreach ($toRemove as $assetId) {
+                if ($freeStatusId) {
+                    Asset::whereKey($assetId)->first()?->update(['asset_status_id' => $freeStatusId]);
+                }
+                $current[$assetId]?->delete();
+            }
+
+            // Activos conservados: actualizar empleado/fecha/estado físico/notas
+            foreach ($toKeep as $assetId) {
+                $current[$assetId]?->update([
+                    'employee_id' => $this->employeeId,
+                    'assigned_at' => $this->assignedAt,
+                    'condition_on_assign' => $this->condition,
+                    'notes' => $this->notes ?: null,
+                ]);
+            }
+
+            // Activos nuevos: crear asignación y marcarlos asignados
+            foreach ($toAdd as $assetId) {
+                Assignment::create([
+                    'asset_id' => $assetId,
+                    'employee_id' => $this->employeeId,
+                    'responsive_letter_id' => $letter->id,
+                    'assigned_at' => $this->assignedAt,
+                    'condition_on_assign' => $this->condition,
+                    'assigned_by' => auth()->id(),
+                    'notes' => $this->notes ?: null,
+                ]);
+                if ($assignedStatusId) {
+                    Asset::whereKey($assetId)->first()?->update(['asset_status_id' => $assignedStatusId]);
+                }
+            }
+        });
+
+        $letters->generatePdf($letter);
+
+        $this->open = false;
+        $this->reset('editingLetterId');
+        $this->dispatch('assignment-saved');
+        $this->dispatch('asset-saved');
+        $this->dispatch('letters-updated');
+        $this->dispatch('toast', type: 'success', message: "Carta {$letter->folio} corregida (mismo folio).");
+        $this->dispatch('open-url', url: route('admin.letters.pdf', $letter->id));
     }
 
     /**

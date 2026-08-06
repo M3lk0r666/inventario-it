@@ -102,6 +102,31 @@
                         </ul>
                     </div>
                 @endif
+                {{-- Contacto de emergencia --}}
+                <div class="mt-6 border-t border-border-soft pt-4">
+                    <dt class="text-label-md text-on-surface-variant uppercase tracking-wider mb-2 flex items-center gap-1">
+                        <i class="ri-first-aid-kit-line text-primary"></i> Contacto de emergencia
+                    </dt>
+                    @if ($employee->emergency_contact_name || $employee->emergency_contact_phone)
+                        <dl class="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-4">
+                            <div>
+                                <dt class="text-label-md text-on-surface-variant uppercase tracking-wider">Nombre</dt>
+                                <dd class="mt-0.5 text-body-md text-on-surface">{{ $employee->emergency_contact_name ?? '—' }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-label-md text-on-surface-variant uppercase tracking-wider">Parentesco</dt>
+                                <dd class="mt-0.5 text-body-md text-on-surface">{{ $employee->emergency_contact_relationship ?? '—' }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-label-md text-on-surface-variant uppercase tracking-wider">Teléfono</dt>
+                                <dd class="mt-0.5 text-body-md text-on-surface">{{ $employee->emergency_contact_phone ?? '—' }}</dd>
+                            </div>
+                        </dl>
+                    @else
+                        <p class="text-body-md text-on-surface-variant">Sin contacto de emergencia registrado.</p>
+                    @endif
+                </div>
+
                 @if ($employee->notes)
                     <div class="mt-6 border-t border-border-soft pt-4">
                         <dt class="text-label-md text-on-surface-variant uppercase tracking-wider">Notas</dt>

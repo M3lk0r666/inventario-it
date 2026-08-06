@@ -98,6 +98,14 @@
                                                         </a>
                                                     @endcan
                                                     @if ($letter->status !== 'cancelled')
+                                                        @if ($letter->type === 'delivery' && $letter->status === 'generated' && ($letter->returned_count ?? 0) === 0)
+                                                            @can('assignments.edit')
+                                                                <button type="button" onclick="Livewire.dispatch('edit-assignment', { letterId: {{ $letter->id }} })"
+                                                                    class="p-1.5 text-outline rounded-lg hover:text-primary hover:bg-primary-fixed/40" title="Corregir asignación (conserva el folio)">
+                                                                    <i class="ri-pencil-line text-base"></i>
+                                                                </button>
+                                                            @endcan
+                                                        @endif
                                                         @can('responsive_letters.edit')
                                                             <button type="button" onclick="Livewire.dispatch('sign-letter', { id: {{ $letter->id }} })"
                                                                 class="p-1.5 text-outline rounded-lg hover:text-success hover:bg-success/10"

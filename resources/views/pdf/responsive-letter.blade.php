@@ -83,6 +83,22 @@
         </tr>
     </table>
 
+    @if (! $isReturn && ($letter->employee->emergency_contact_name || $letter->employee->emergency_contact_phone))
+        <div class="section-title">Contacto de Emergencia</div>
+        <table class="info-table">
+            <tr>
+                <td class="info-label">Nombre:</td>
+                <td>{{ $letter->employee->emergency_contact_name ?? '—' }}</td>
+                <td class="info-label">Parentesco:</td>
+                <td>{{ $letter->employee->emergency_contact_relationship ?? '—' }}</td>
+            </tr>
+            <tr>
+                <td class="info-label">Teléfono:</td>
+                <td colspan="3">{{ $letter->employee->emergency_contact_phone ?? '—' }}</td>
+            </tr>
+        </table>
+    @endif
+
     @if ($introText)
         <p class="intro">{{ $introText }}</p>
     @endif

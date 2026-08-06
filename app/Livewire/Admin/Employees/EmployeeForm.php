@@ -35,6 +35,8 @@ class EmployeeForm extends Component
             'department_id' => null, 'location_id' => null, 'manager_id' => null,
             'email' => null, 'phone' => null, 'zoom_extension' => null,
             'status' => 'active', 'notes' => null,
+            'emergency_contact_name' => null, 'emergency_contact_relationship' => null,
+            'emergency_contact_phone' => null,
         ];
 
         if ($id) {
@@ -91,6 +93,9 @@ class EmployeeForm extends Component
             'data.zoom_extension' => ['nullable', 'string', 'max:20'],
             'data.status' => ['required', 'in:active,inactive'],
             'data.notes' => ['nullable', 'string'],
+            'data.emergency_contact_name' => ['nullable', 'string', 'max:255'],
+            'data.emergency_contact_relationship' => ['nullable', 'string', 'max:100'],
+            'data.emergency_contact_phone' => ['nullable', 'string', 'max:30'],
         ], [], [
             'data.employee_number' => 'número de empleado', 'data.name' => 'nombre', 'data.position' => 'puesto',
             'data.department_id' => 'departamento', 'data.location_id' => 'ubicación', 'data.email' => 'correo',

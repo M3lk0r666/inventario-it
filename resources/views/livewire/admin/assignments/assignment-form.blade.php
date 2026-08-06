@@ -1,5 +1,7 @@
 <div>
-    <x-slide-over model="open" title="Nueva asignación de bienes (entrega al colaborador)" width="max-w-xl" icon="ri-user-received-line">
+    <x-slide-over model="open"
+        :title="$editingLetterId ? 'Corregir asignación (conserva el folio)' : 'Nueva asignación de bienes (entrega al colaborador)'"
+        width="max-w-xl" icon="ri-user-received-line">
         <form wire:submit="save" class="space-y-4">
             <div>
                 <label class="form-label">Empleado <span class="text-error">*</span></label>
@@ -167,7 +169,7 @@
             <div class="flex justify-end gap-2 border-t border-border-soft pt-4">
                 <button type="button" class="btn-ghost" wire:click="$set('open', false)">Cancelar</button>
                 <button type="submit" class="btn-primary" wire:loading.attr="disabled" wire:target="save">
-                    <span wire:loading.remove wire:target="save">Registrar asignación</span>
+                    <span wire:loading.remove wire:target="save">{{ $editingLetterId ? 'Guardar corrección' : 'Registrar asignación' }}</span>
                     <span wire:loading wire:target="save">Guardando…</span>
                 </button>
             </div>

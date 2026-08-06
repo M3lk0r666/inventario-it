@@ -74,7 +74,8 @@
             'header' => 'Administración', 'icon' => 'ri-shield-keyhole-line',
             'items' => [
                 ['name' => 'Usuarios', 'icon' => 'ri-user-settings-line', 'can' => 'users.view', 'route' => 'admin.users.index'],
-                ['name' => 'Configuración', 'icon' => 'ri-settings-3-line', 'can' => 'settings.view', 'route' => 'admin.settings.index'],
+                ['name' => 'Configuración', 'icon' => 'ri-settings-3-line', 'can' => 'settings.view', 'route' => 'admin.settings.index', 'match' => 'admin.settings.index'],
+                ['name' => 'Plantillas de cartas', 'icon' => 'ri-file-text-line', 'can' => 'settings.view', 'route' => 'admin.settings.letter-templates'],
                 ['name' => 'Plantillas de correo', 'icon' => 'ri-mail-settings-line', 'can' => 'settings.view', 'route' => 'admin.settings.email-templates'],
                 ['name' => 'Auditoría', 'icon' => 'ri-history-line', 'can' => 'activity.view', 'route' => 'admin.audit.index'],
             ],
@@ -99,10 +100,13 @@
                     ? route($item['route'])
                     : ($item['href'] ?? '#');
                 // Conserva 'active' precalculado (p.ej. items de Catálogos); si no,
-                // lo deriva de la ruta del módulo (incluye sub-rutas como *.show).
+                // lo deriva del patrón: 'match' explícito, o la ruta del módulo
+                // (incluye sub-rutas como *.show). El 'match' evita colisiones
+                // entre rutas con prefijo común (p.ej. admin.settings.*).
+                $pattern = $item['match']
+                    ?? (isset($item['route']) ? \Illuminate\Support\Str::beforeLast($item['route'], '.index').'*' : null);
                 $item['active'] = $item['active']
-                    ?? (isset($item['route'])
-                        && request()->routeIs(\Illuminate\Support\Str::beforeLast($item['route'], '.index').'*'));
+                    ?? ($pattern && request()->routeIs($pattern));
 
                 return $item;
             })

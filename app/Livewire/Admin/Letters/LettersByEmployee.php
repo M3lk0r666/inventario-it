@@ -48,7 +48,11 @@ class LettersByEmployee extends Component
         $letterQuery = ResponsiveLetter::query()
             ->when($this->typeFilter, fn ($q) => $q->where('type', $this->typeFilter))
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
-            ->withCount(['assignments', 'returnedAssignments']);
+            ->withCount([
+                'assignments', 'returnedAssignments',
+                // Activos de esta entrega que ya fueron devueltos (para permitir corrección solo si 0).
+                'assignments as returned_count' => fn ($q) => $q->whereNotNull('returned_at'),
+            ]);
 
         $employees = Employee::query()
             ->whereHas('responsiveLetters', fn ($q) => $q

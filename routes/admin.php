@@ -249,6 +249,10 @@ Route::middleware('permission:settings.view')->group(function () {
     Route::get('/configuracion/plantillas-correo', function () {
         return view('admin.settings.email-templates');
     })->name('settings.email-templates');
+
+    Route::get('/configuracion/plantillas-cartas', function () {
+        return view('admin.settings.letter-templates');
+    })->name('settings.letter-templates');
 });
 
 Route::middleware('permission:activity.view')->group(function () {
