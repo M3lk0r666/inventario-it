@@ -23,12 +23,16 @@ class LetterTemplatesManager extends Component
 
     public string $cab_text = '';
 
+    public string $cab_note = '';
+
     // Cartas de Entrega de Bienes (CEB) — cuando el empleado devuelve/egresa
     public string $ceb_prefix = '';
 
     public string $ceb_start = '';
 
     public string $ceb_text = '';
+
+    public string $ceb_note = '';
 
     public function mount(): void
     {
@@ -37,9 +41,11 @@ class LetterTemplatesManager extends Component
         $this->cab_prefix = Setting::get('letter_delivery_prefix', 'CAB');
         $this->cab_start = Setting::get('letter_delivery_start', '1');
         $this->cab_text = Setting::get('letter_delivery_text', ResponsiveLetterService::DEFAULT_TEXT['delivery']);
+        $this->cab_note = Setting::get('letter_delivery_note', ResponsiveLetterService::DEFAULT_NOTE['delivery']);
         $this->ceb_prefix = Setting::get('letter_return_prefix', 'CEB');
         $this->ceb_start = Setting::get('letter_return_start', '1');
         $this->ceb_text = Setting::get('letter_return_text', ResponsiveLetterService::DEFAULT_TEXT['return']);
+        $this->ceb_note = Setting::get('letter_return_note', ResponsiveLetterService::DEFAULT_NOTE['return']);
     }
 
     public function save(): void
@@ -49,12 +55,14 @@ class LetterTemplatesManager extends Component
             'cab_prefix' => ['required', 'string', 'max:10'],
             'cab_start' => ['required', 'integer', 'min:1'],
             'cab_text' => ['nullable', 'string', 'max:3000'],
+            'cab_note' => ['nullable', 'string', 'max:1000'],
             'ceb_prefix' => ['required', 'string', 'max:10'],
             'ceb_start' => ['required', 'integer', 'min:1'],
             'ceb_text' => ['nullable', 'string', 'max:3000'],
+            'ceb_note' => ['nullable', 'string', 'max:1000'],
         ], [], [
-            'cab_prefix' => 'prefijo CAB', 'cab_start' => 'folio inicial CAB', 'cab_text' => 'texto CAB',
-            'ceb_prefix' => 'prefijo CEB', 'ceb_start' => 'folio inicial CEB', 'ceb_text' => 'texto CEB',
+            'cab_prefix' => 'prefijo CAB', 'cab_start' => 'folio inicial CAB', 'cab_text' => 'texto CAB', 'cab_note' => 'nota CAB',
+            'ceb_prefix' => 'prefijo CEB', 'ceb_start' => 'folio inicial CEB', 'ceb_text' => 'texto CEB', 'ceb_note' => 'nota CEB',
         ]);
 
         // Protección de consecutividad: el folio inicial no puede quedar por debajo
@@ -66,9 +74,11 @@ class LetterTemplatesManager extends Component
         Setting::set('letter_delivery_prefix', $this->cab_prefix);
         Setting::set('letter_delivery_start', $this->cab_start);
         Setting::set('letter_delivery_text', $this->cab_text);
+        Setting::set('letter_delivery_note', $this->cab_note);
         Setting::set('letter_return_prefix', $this->ceb_prefix);
         Setting::set('letter_return_start', $this->ceb_start);
         Setting::set('letter_return_text', $this->ceb_text);
+        Setting::set('letter_return_note', $this->ceb_note);
 
         $this->dispatch('toast', type: 'success',
             message: 'Configuración de cartas guardada.'.($adjusted ? ' Se ajustó un folio inicial para conservar la consecutividad.' : ''));

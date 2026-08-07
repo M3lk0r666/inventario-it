@@ -136,6 +136,11 @@ Correcciones en `deploy.sh`: ejecuta `git config core.fileMode false` (ignora ca
 3. **Especificaciones (JSON) de tipos de activo**: la ayuda y un `placeholder` explican el formato (arreglo de objetos `{key, label, type}`, type = text|number) con ejemplo. Se capturan aquí los campos dinámicos que luego aparecen al **dar de alta un activo** de ese tipo y en su **pestaña Especificaciones**.
 5. **PDFs estandarizados a azul**: la carta responsiva usaba el naranja NETJER `#E87722` (regla superior, borde de títulos, nombre de empresa) → cambiado a `#003d9b` (mismo azul que el reporte). **Requiere `npm run build` + `view:clear`.**
 
+### Plantillas de cartas: nota al pie + HTML + ancho (2026-08-03)
+- La página **Plantillas de cartas** usa ancho completo (card sin `max-w`, CAB/CEB en 2 columnas en pantallas grandes).
+- **Nota al pie editable** por tipo: settings `letter_delivery_note` / `letter_return_note` (defaults en `ResponsiveLetterService::DEFAULT_NOTE`). Se editan en la página; el PDF la toma vía `noteText` (reemplaza el texto antes fijo "Nota: Los activos...").
+- **HTML básico en los textos** (intro y nota): el PDF los renderiza con `{!! nl2br(...) !!}`, así funcionan `<strong>`, `<br>`, `<br><br>` y los saltos de línea escritos. Aviso en la página. **Requiere `view:clear`.**
+
 ### Contacto de emergencia del empleado (2026-08-02)
 Migración `..._000100_add_emergency_contact_to_employees` (nombre, parentesco, teléfono, nullable). Modelo fillable ampliado. **Alta/edición de empleado con pestañas** (Alpine `x-data="{ tab }"`): "Datos" y "Contacto de emergencia" (3 campos, opcionales). Ficha del empleado (Datos) muestra una sección "Contacto de emergencia". También aparece en la **carta de entrega/asignación** (PDF) — solo en cartas de entrega y si hay datos. **Requiere `php artisan migrate` + `view:clear`.**
 

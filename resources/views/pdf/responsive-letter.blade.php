@@ -100,7 +100,7 @@
     @endif
 
     @if ($introText)
-        <p class="intro">{{ $introText }}</p>
+        <p class="intro">{!! nl2br($introText) !!}</p>
     @endif
 
     <div class="section-title">{{ $isReturn ? 'Equipo recibido' : 'Equipo / Accesorios entregados' }}</div>
@@ -154,7 +154,9 @@
         </table>
     @endif
 
-    <p class="note">Nota: Los activos se entregan/reciben en uso y sin claves de acceso. El colaborador se compromete a su buen uso, resguardo y devolución en las mismas condiciones.</p>
+    @if ($noteText)
+        <p class="note">{!! nl2br($noteText) !!}</p>
+    @endif
 
     @if ($letter->notes)
         <p class="intro"><strong>Observaciones:</strong> {{ $letter->notes }}</p>

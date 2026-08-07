@@ -43,6 +43,12 @@ class ResponsiveLetterService
             ."Con la presente entrega, {colaborador} queda liberado(a) de la responsabilidad y custodia sobre dichos bienes. Cualquier faltante, daño o condición distinta al desgaste natural por uso quedará asentado en el apartado de observaciones de este documento.",
     ];
 
+    /** Nota al pie por defecto por tipo. Admite los mismos marcadores. */
+    public const DEFAULT_NOTE = [
+        'delivery' => 'Nota: Los activos se entregan en uso y sin claves de acceso. El colaborador se compromete a su buen uso, resguardo y devolución en las mismas condiciones.',
+        'return' => 'Nota: Los activos se reciben en uso y sin claves de acceso, verificando su estado físico al momento de la entrega.',
+    ];
+
     /** Marcadores disponibles para los textos de carta: {marcador} => descripción. */
     public const PLACEHOLDERS = [
         '{colaborador}' => 'Nombre del colaborador',
@@ -103,12 +109,14 @@ class ResponsiveLetterService
         $type = $letter->type ?? 'delivery';
 
         $rawText = Setting::get("letter_{$type}_text", self::DEFAULT_TEXT[$type] ?? '');
+        $rawNote = Setting::get("letter_{$type}_note", self::DEFAULT_NOTE[$type] ?? '');
 
         $pdf = Pdf::loadView('pdf.responsive-letter', [
             'letter' => $letter,
             'assignments' => $letter->documentAssignments,
             'companyName' => Setting::get('company_name', 'NETJER Networks'),
             'introText' => $this->renderPlaceholders($rawText, $letter),
+            'noteText' => $this->renderPlaceholders($rawNote, $letter),
             'docTitle' => self::TYPE_LABEL[$type] ?? 'Carta responsiva',
             'logoPath' => $this->logoPath(),
         ])->setPaper('letter');

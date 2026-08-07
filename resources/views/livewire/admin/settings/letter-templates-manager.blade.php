@@ -1,8 +1,15 @@
 <div>
     @php($readonly = ! auth()->user()->can('settings.edit'))
 
-    <div class="card p-6 max-w-2xl">
+    <div class="card p-6">
         <p class="text-body-sm text-on-surface-variant mb-3">Cada tipo lleva su propio prefijo de folio, consecutivo y texto, para no mezclarse.</p>
+
+        <div class="mb-4 rounded-lg border border-border-soft bg-surface-container-low/40 p-3 text-body-sm text-on-surface-variant">
+            <i class="ri-code-s-slash-line text-primary"></i>
+            En los textos puedes usar <strong>HTML básico</strong> para dar formato: <code class="px-1 rounded bg-white border border-border-soft font-mono">&lt;strong&gt;texto&lt;/strong&gt;</code> (negrita),
+            <code class="px-1 rounded bg-white border border-border-soft font-mono">&lt;br&gt;</code> (salto de línea) y
+            <code class="px-1 rounded bg-white border border-border-soft font-mono">&lt;br&gt;&lt;br&gt;</code> (espacio entre párrafos). Los saltos de línea que escribas también se respetan.
+        </div>
 
         <div class="mb-5 rounded-lg border border-border-soft bg-surface-container-low/40 p-3">
             <p class="text-body-sm text-on-surface-variant mb-2">
@@ -18,7 +25,7 @@
             </div>
         </div>
 
-        <div class="space-y-6">
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
             {{-- CAB --}}
             <div class="border border-border-soft rounded-lg p-4">
                 <div class="flex items-center gap-2 mb-3">
@@ -43,6 +50,12 @@
                     <label class="form-label">Texto de la carta</label>
                     <textarea wire:model="cab_text" rows="5" class="form-input" @disabled($readonly)></textarea>
                     @error('cab_text') <p class="form-error">{{ $message }}</p> @enderror
+                </div>
+                <div class="mt-3">
+                    <label class="form-label">Nota al pie</label>
+                    <textarea wire:model="cab_note" rows="2" class="form-input" @disabled($readonly)></textarea>
+                    <p class="form-help">Aparece al final de la carta, antes de las firmas.</p>
+                    @error('cab_note') <p class="form-error">{{ $message }}</p> @enderror
                 </div>
             </div>
 
@@ -71,13 +84,19 @@
                     <textarea wire:model="ceb_text" rows="5" class="form-input" @disabled($readonly)></textarea>
                     @error('ceb_text') <p class="form-error">{{ $message }}</p> @enderror
                 </div>
-            </div>
-
-            @unless ($readonly)
-                <div class="flex justify-end border-t border-border-soft pt-4">
-                    <button type="button" class="btn-primary" wire:click="save" wire:loading.attr="disabled" wire:target="save">Guardar</button>
+                <div class="mt-3">
+                    <label class="form-label">Nota al pie</label>
+                    <textarea wire:model="ceb_note" rows="2" class="form-input" @disabled($readonly)></textarea>
+                    <p class="form-help">Aparece al final de la carta, antes de las firmas.</p>
+                    @error('ceb_note') <p class="form-error">{{ $message }}</p> @enderror
                 </div>
-            @endunless
+            </div>
         </div>
+
+        @unless ($readonly)
+            <div class="flex justify-end border-t border-border-soft pt-4 mt-6">
+                <button type="button" class="btn-primary" wire:click="save" wire:loading.attr="disabled" wire:target="save">Guardar</button>
+            </div>
+        @endunless
     </div>
 </div>
