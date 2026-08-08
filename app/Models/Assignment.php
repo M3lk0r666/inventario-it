@@ -12,9 +12,15 @@ class Assignment extends Model
     use SoftDeletes;
     use TracksActivity;
 
+    public const TYPES = [
+        'permanent' => 'Definitiva',
+        'loan' => 'Préstamo temporal',
+    ];
+
     protected $fillable = [
         'asset_id', 'employee_id', 'responsive_letter_id', 'return_letter_id',
         'assigned_at', 'returned_at', 'condition_on_assign', 'condition_on_return',
+        'assignment_type', 'expected_return_at',
         'assigned_by', 'received_by', 'notes',
     ];
 
@@ -23,7 +29,13 @@ class Assignment extends Model
         return [
             'assigned_at' => 'date',
             'returned_at' => 'date',
+            'expected_return_at' => 'date',
         ];
+    }
+
+    public function isLoan(): bool
+    {
+        return $this->assignment_type === 'loan';
     }
 
     public function asset(): BelongsTo

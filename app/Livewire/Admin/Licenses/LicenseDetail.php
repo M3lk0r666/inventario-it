@@ -30,6 +30,9 @@ class LicenseDetail extends Component
 
     public string $assignNotes = '';
 
+    // Liberar asiento (confirmación)
+    public ?int $confirmingReleaseId = null;
+
     // Renovación
     public bool $renewing = false;
 
@@ -156,15 +159,22 @@ class LicenseDetail extends Component
         $this->dispatch('toast', type: 'success', message: 'Renovación registrada; la alerta se reinició al nuevo periodo.');
     }
 
-    public function release(int $assignmentId): void
+    public function confirmRelease(int $assignmentId): void
+    {
+        $this->authorize('licenses.assign');
+        $this->confirmingReleaseId = $assignmentId;
+    }
+
+    public function release(): void
     {
         $this->authorize('licenses.assign');
 
         $assignment = LicenseAssignment::where('license_id', $this->licenseId)
             ->whereNull('released_at')
-            ->findOrFail($assignmentId);
+            ->findOrFail($this->confirmingReleaseId);
 
         $assignment->update(['released_at' => now()]);
+        $this->confirmingReleaseId = null;
         $this->dispatch('license-saved');
         $this->dispatch('toast', type: 'success', message: 'Asiento liberado.');
     }

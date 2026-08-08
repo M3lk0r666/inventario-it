@@ -33,6 +33,9 @@ class ReceptionForm extends Component
 
     public ?int $newStatusId = null;
 
+    /** Ubicación destino de los activos al recibirlos (por defecto, Almacén). */
+    public ?int $returnLocationId = null;
+
     public string $notes = '';
 
     public bool $generateLetter = true;
@@ -61,6 +64,8 @@ class ReceptionForm extends Component
         $this->reset('employeeId', 'notes', 'selectedAssignments', 'conditions', 'additionalChecked', 'additionalValues');
         $this->returnedAt = now()->format('Y-m-d');
         $this->newStatusId = AssetStatus::where('slug', 'resguardo')->value('id');
+        // Ubicación de retorno por defecto: la que contenga "almac" (Almacén).
+        $this->returnLocationId = \App\Models\Location::where('name', 'like', '%almac%')->value('id');
         $this->generateLetter = auth()->user()->can('responsive_letters.create');
         $this->notifyEmployee = true;
         $this->notifyManager = true;
@@ -155,7 +160,11 @@ class ReceptionForm extends Component
                     'return_letter_id' => $letter?->id,
                 ]);
 
-                $assignment->asset?->update(['asset_status_id' => $this->newStatusId]);
+                $assetUpdate = ['asset_status_id' => $this->newStatusId];
+                if ($this->returnLocationId) {
+                    $assetUpdate['location_id'] = $this->returnLocationId;
+                }
+                $assignment->asset?->update($assetUpdate);
             }
 
             return $letter;
@@ -260,6 +269,7 @@ class ReceptionForm extends Component
                 ->orderBy('name')->pluck('name', 'id'),
             'assignments' => $this->activeAssignments(),
             'statuses' => \App\Support\CatalogRegistry::options('estados-de-activo'),
+            'locations' => \App\Support\CatalogRegistry::options('ubicaciones'),
             'conditionOptions' => AssignmentForm::CONDITIONS,
             'additionalTypes' => AdditionalItemType::where('is_active', true)->orderBy('name')->get(),
             'mailReady' => MailConfigurator::isReady(),

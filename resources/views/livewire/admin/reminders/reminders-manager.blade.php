@@ -42,6 +42,11 @@
                             @if ($reminder->ends_at) → {{ $reminder->ends_at->format('d/m/Y H:i') }} @endif
                         </div>
                         <div class="mt-1 flex items-center gap-1"><i class="ri-user-line"></i> {{ $reminder->user?->name }}</div>
+                        @if ($reminder->isRecurring())
+                            <div class="mt-1 flex items-center gap-1 text-primary"><i class="ri-repeat-line"></i>
+                                {{ \App\Models\Reminder::RECURRENCES[$reminder->recurrence] ?? $reminder->recurrence }}
+                            </div>
+                        @endif
                     </div>
                     @if ($reminder->user_id === auth()->id())
                         <div class="mt-3 pt-3 border-t border-border-soft flex justify-end gap-1">
@@ -88,12 +93,24 @@
                     @error('data.ends_at') <p class="form-error">{{ $message }}</p> @enderror
                 </div>
             </div>
-            <div>
-                <label class="form-label">Visibilidad <span class="text-error">*</span></label>
-                <select wire:model="data.visibility" class="form-input">
-                    <option value="private">Privado (solo yo)</option>
-                    <option value="public">Público (todos los usuarios)</option>
-                </select>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label">Visibilidad <span class="text-error">*</span></label>
+                    <select wire:model="data.visibility" class="form-input">
+                        <option value="private">Privado (solo yo)</option>
+                        <option value="public">Público (todos los usuarios)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Repetir</label>
+                    <select wire:model="data.recurrence" class="form-input">
+                        @foreach (\App\Models\Reminder::RECURRENCES as $value => $label)
+                            <option value="{{ $value }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <p class="form-help">Si se repite, avanzará automáticamente a la siguiente fecha.</p>
+                    @error('data.recurrence') <p class="form-error">{{ $message }}</p> @enderror
+                </div>
             </div>
             <div class="flex justify-end gap-2 border-t border-border-soft pt-4">
                 <button type="button" class="btn-ghost" wire:click="$set('open', false)">Cancelar</button>

@@ -55,6 +55,11 @@ class AssignmentsTable extends DataTableComponent
             Column::make('Activo', 'asset.name')
                 ->searchable(),
 
+            Column::make('No. de serie', 'asset.serial_number')
+                ->sortable()->searchable()
+                ->format(fn ($value) => $value ? '<span class="font-mono text-mono-sm">'.e($value).'</span>' : '—')
+                ->html(),
+
             Column::make('Empleado', 'employee.name')
                 ->sortable()->searchable(),
 
@@ -70,6 +75,19 @@ class AssignmentsTable extends DataTableComponent
                 ->format(fn ($value, $row) => $row->returned_at
                     ? '<span class="chip-neutral">Devuelta</span>'
                     : '<span class="chip-success">Activa</span>')
+                ->html(),
+
+            Column::make('Tipo', 'assignment_type')
+                ->sortable()
+                ->format(function ($value, $row) {
+                    if ($value === 'loan') {
+                        $hint = $row->expected_return_at ? ' (dev. '.$row->expected_return_at->format('d/m/Y').')' : '';
+
+                        return '<span class="chip-warning" title="Préstamo temporal'.e($hint).'"><i class="ri-time-line"></i> Préstamo</span>';
+                    }
+
+                    return '<span class="chip-neutral">Definitiva</span>';
+                })
                 ->html(),
 
             Column::make('Carta', 'responsiveLetter.folio')

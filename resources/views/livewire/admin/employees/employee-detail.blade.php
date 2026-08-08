@@ -4,6 +4,7 @@
         'access' => ['label' => 'Acceso al portal', 'icon' => 'ri-login-box-line', 'count' => $employee->user_id ? 1 : null],
         'accounts' => ['label' => 'Cuentas de acceso', 'icon' => 'ri-shield-keyhole-line', 'count' => $employee->accounts->count()],
         'assets' => ['label' => 'Activos asignados', 'icon' => 'ri-computer-line', 'count' => $employee->assignments->whereNull('returned_at')->count()],
+        'licenses' => ['label' => 'Licencias', 'icon' => 'ri-key-2-line', 'count' => $employee->licenseAssignments->whereNull('released_at')->count()],
         'letters' => ['label' => 'Cartas responsivas', 'icon' => 'ri-file-text-line', 'count' => $employee->responsiveLetters->count()],
         'history' => ['label' => 'Histórico', 'icon' => 'ri-history-line', 'count' => $activities->count()],
     ])
@@ -251,12 +252,56 @@
                                         <td class="px-4 py-3 text-body-md">{{ $a->assigned_at?->format('d/m/Y') }}</td>
                                         <td class="px-4 py-3 text-body-md">{{ $a->returned_at?->format('d/m/Y') ?? '—' }}</td>
                                         <td class="px-4 py-3">
-                                            <span class="{{ $a->returned_at ? 'chip-neutral' : 'chip-success' }}">{{ $a->returned_at ? 'Devuelto' : 'Activo' }}</span>
+                                            <div class="flex flex-wrap items-center gap-1">
+                                                <span class="{{ $a->returned_at ? 'chip-neutral' : 'chip-success' }}">{{ $a->returned_at ? 'Devuelto' : 'Activo' }}</span>
+                                                @if (! $a->returned_at && $a->assignment_type === 'loan')
+                                                    <span class="chip-warning" title="{{ $a->expected_return_at ? 'Devolución estimada: '.$a->expected_return_at->format('d/m/Y') : 'Préstamo temporal' }}">
+                                                        <i class="ri-time-line"></i> Préstamo
+                                                    </span>
+                                                @endif
+                                            </div>
                                         </td>
                                         <td class="px-4 py-3 text-mono-sm font-mono">
                                             @if ($a->responsiveLetter)
                                                 <a href="{{ route('admin.letters.pdf', $a->responsive_letter_id) }}" target="_blank" class="text-primary hover:underline">{{ $a->responsiveLetter->folio }}</a>
                                             @else — @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+
+            {{-- LICENCIAS --}}
+            @elseif ($tab === 'licenses')
+                @can('licenses.assign')
+                    <div class="mb-4 flex justify-end">
+                        <button type="button" class="btn-secondary" wire:click="openAssignLicense">
+                            <i class="ri-add-line"></i> Asignar licencia
+                        </button>
+                    </div>
+                @endcan
+                @if ($employee->licenseAssignments->isEmpty())
+                    <p class="text-body-md text-on-surface-variant">Este empleado no tiene licencias asignadas.</p>
+                @else
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="w-full text-left">
+                            <thead class="bg-[#F9FAFB] border-b border-border-soft">
+                                <tr>
+                                    @foreach (['Licencia', 'Asignada', 'Liberada', 'Situación'] as $th)
+                                        <th class="px-4 py-table-cell-padding text-label-md text-on-surface-variant uppercase tracking-wider">{{ $th }}</th>
+                                    @endforeach
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border-soft">
+                                @foreach ($employee->licenseAssignments->sortByDesc('assigned_at') as $la)
+                                    <tr class="hover:bg-surface-container-low transition-colors">
+                                        <td class="px-4 py-3 text-body-md">{{ trim(($la->license?->software_name ?? '').' '.($la->license?->version ?? '')) ?: '—' }}</td>
+                                        <td class="px-4 py-3 text-body-md">{{ $la->assigned_at?->format('d/m/Y') }}</td>
+                                        <td class="px-4 py-3 text-body-md">{{ $la->released_at?->format('d/m/Y') ?? '—' }}</td>
+                                        <td class="px-4 py-3">
+                                            <span class="{{ $la->released_at ? 'chip-neutral' : 'chip-success' }}">{{ $la->released_at ? 'Liberada' : 'Vigente' }}</span>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -420,6 +465,38 @@
                 <div class="mt-5 flex justify-end gap-2">
                     <button type="button" class="btn-ghost" wire:click="$set('confirmingRevoke', false)">Cancelar</button>
                     <button type="button" class="btn-danger" wire:click="revokeAccess" wire:loading.attr="disabled">Revocar</button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Modal asignar licencia --}}
+    @if ($assigningLicense)
+        <div class="fixed inset-0 z-[60] flex items-center justify-center">
+            <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('assigningLicense', false)"></div>
+            <div class="relative bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-border-soft w-full max-w-md mx-4 p-6">
+                <h3 class="text-title-md text-on-surface mb-3">Asignar licencia al empleado</h3>
+                @if ($availableLicenses->isEmpty())
+                    <p class="text-body-md text-on-surface-variant">No hay licencias con asientos disponibles.</p>
+                @else
+                    <div class="space-y-4">
+                        <div>
+                            <label class="form-label">Licencia <span class="text-error">*</span></label>
+                            <x-searchable-select model="licenseToAssign" :options="$availableLicenses"
+                                placeholder="— Seleccionar licencia —" searchPlaceholder="Buscar por software…" />
+                            @error('licenseToAssign') <p class="form-error">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label class="form-label">Notas</label>
+                            <textarea wire:model="licenseAssignNotes" rows="2" class="form-input"></textarea>
+                        </div>
+                    </div>
+                @endif
+                <div class="mt-5 flex justify-end gap-2">
+                    <button type="button" class="btn-ghost" wire:click="$set('assigningLicense', false)">Cancelar</button>
+                    @unless ($availableLicenses->isEmpty())
+                        <button type="button" class="btn-primary" wire:click="saveAssignLicense" wire:loading.attr="disabled">Asignar</button>
+                    @endunless
                 </div>
             </div>
         </div>

@@ -27,6 +27,9 @@ class ProblemForm extends Component
 
     public array $data = [];
 
+    /** Activo afectado (propiedad de primer nivel para el searchable-select). */
+    public ?int $assetId = null;
+
     /** @var \Livewire\Features\SupportFileUploads\TemporaryUploadedFile[] */
     public array $files = [];
 
@@ -42,18 +45,20 @@ class ProblemForm extends Component
         $this->reset('files');
 
         $this->editingId = $id;
+        $this->assetId = $assetId;
         $this->data = [
             'title' => null, 'description' => null, 'problem_category_id' => null,
-            'asset_id' => $assetId, 'priority' => 'medium', 'status' => 'new',
+            'priority' => 'medium', 'status' => 'new',
             'cost' => null, 'assigned_to' => null,
             'reported_at' => now()->format('Y-m-d\TH:i'),
         ];
 
         if ($id) {
             $p = Problem::findOrFail($id);
-            foreach (['title', 'description', 'problem_category_id', 'asset_id', 'priority', 'status', 'cost', 'assigned_to'] as $key) {
+            foreach (['title', 'description', 'problem_category_id', 'priority', 'status', 'cost', 'assigned_to'] as $key) {
                 $this->data[$key] = $p->{$key};
             }
+            $this->assetId = $p->asset_id;
             $this->data['reported_at'] = $p->reported_at?->format('Y-m-d\TH:i');
         }
 
@@ -63,6 +68,9 @@ class ProblemForm extends Component
     public function save(): void
     {
         $this->authorize($this->editingId ? 'problems.edit' : 'problems.create');
+
+        // Sincroniza el activo (propiedad de primer nivel) hacia data.
+        $this->data['asset_id'] = $this->assetId;
 
         $validated = $this->validate([
             'data.title' => ['required', 'string', 'max:255'],
@@ -150,7 +158,9 @@ class ProblemForm extends Component
     {
         return view('livewire.admin.problems.problem-form', [
             'categories' => CatalogRegistry::options('categorias-de-problema'),
-            'assets' => Asset::orderBy('asset_tag')->get()->mapWithKeys(fn ($a) => [$a->id => "{$a->asset_tag} — {$a->name}"]),
+            'assets' => Asset::orderBy('asset_tag')->get()->mapWithKeys(fn ($a) => [
+                $a->id => "{$a->asset_tag} — {$a->name}".($a->serial_number ? " · S/N: {$a->serial_number}" : ''),
+            ]),
             'technicians' => User::orderBy('name')->pluck('name', 'id'),
         ]);
     }

@@ -123,12 +123,6 @@
                         </div>
                     @endif
                 </dl>
-                @if ($asset->notes)
-                    <div class="mt-6 border-t border-border-soft pt-4">
-                        <dt class="text-label-md text-on-surface-variant uppercase tracking-wider">Comentarios del alta</dt>
-                        <dd class="mt-1 text-body-md text-on-surface whitespace-pre-line">{{ $asset->notes }}</dd>
-                    </div>
-                @endif
                 </div>
 
                 {{-- Panel de imágenes (como GLPI) --}}
@@ -321,10 +315,10 @@
 
             {{-- LICENCIAS --}}
             @elseif ($tab === 'licenses')
-                @can('licenses.view')
+                @can('licenses.assign')
                     <div class="mb-4 flex justify-end">
-                        <button type="button" class="btn-secondary" disabled title="Disponible en la Fase 6">
-                            <i class="ri-add-line"></i> Asignar licencia (Fase 6)
+                        <button type="button" class="btn-secondary" wire:click="openAssignLicense">
+                            <i class="ri-add-line"></i> Asignar licencia
                         </button>
                     </div>
                 @endcan
@@ -501,6 +495,38 @@
                 <div class="mt-5 flex justify-end gap-2">
                     <button type="button" class="btn-ghost" wire:click="$set('confirmingRetire', false)">Cancelar</button>
                     <button type="button" class="btn-danger" wire:click="retire" wire:loading.attr="disabled">Dar de baja</button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Modal asignar licencia --}}
+    @if ($assigningLicense)
+        <div class="fixed inset-0 z-[60] flex items-center justify-center">
+            <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('assigningLicense', false)"></div>
+            <div class="relative bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-border-soft w-full max-w-md mx-4 p-6">
+                <h3 class="text-title-md text-on-surface mb-3">Asignar licencia al equipo</h3>
+                @if ($availableLicenses->isEmpty())
+                    <p class="text-body-md text-on-surface-variant">No hay licencias con asientos disponibles.</p>
+                @else
+                    <div class="space-y-4">
+                        <div>
+                            <label class="form-label">Licencia <span class="text-error">*</span></label>
+                            <x-searchable-select model="licenseToAssign" :options="$availableLicenses"
+                                placeholder="— Seleccionar licencia —" searchPlaceholder="Buscar por software…" />
+                            @error('licenseToAssign') <p class="form-error">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label class="form-label">Notas</label>
+                            <textarea wire:model="licenseAssignNotes" rows="2" class="form-input"></textarea>
+                        </div>
+                    </div>
+                @endif
+                <div class="mt-5 flex justify-end gap-2">
+                    <button type="button" class="btn-ghost" wire:click="$set('assigningLicense', false)">Cancelar</button>
+                    @unless ($availableLicenses->isEmpty())
+                        <button type="button" class="btn-primary" wire:click="saveAssignLicense" wire:loading.attr="disabled">Asignar</button>
+                    @endunless
                 </div>
             </div>
         </div>

@@ -51,7 +51,7 @@ class AssetForm extends Component
             'asset_tag' => null, 'name' => null, 'asset_type_id' => null, 'asset_model_id' => null,
             'serial_number' => null, 'asset_status_id' => null, 'location_id' => null,
             'supplier_id' => null, 'purchase_date' => null, 'purchase_cost' => null,
-            'warranty_expires_at' => null, 'notes' => null,
+            'warranty_expires_at' => null,
         ];
         $this->specs = [];
 
@@ -246,7 +246,6 @@ class AssetForm extends Component
             'data.purchase_date' => ['nullable', 'date'],
             'data.purchase_cost' => ['nullable', 'numeric', 'min:0', 'max:99999999'],
             'data.warranty_expires_at' => ['nullable', 'date'],
-            'data.notes' => ['nullable', 'string'],
             'specs.*' => ['nullable', 'string', 'max:255'],
             'photos.*' => ['nullable', 'image', 'max:4096'],
         ];
@@ -266,7 +265,6 @@ class AssetForm extends Component
             'data.purchase_date' => 'fecha de compra',
             'data.purchase_cost' => 'costo de compra',
             'data.warranty_expires_at' => 'garantía hasta',
-            'data.notes' => 'notas',
             'photos.*' => 'imagen',
         ];
     }

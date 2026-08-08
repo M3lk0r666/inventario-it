@@ -46,9 +46,77 @@ class EmployeeDetail extends Component
 
     public bool $confirmingResend = false;
 
+    // Asignar licencia al empleado
+    public bool $assigningLicense = false;
+
+    public ?int $licenseToAssign = null;
+
+    public string $licenseAssignNotes = '';
+
     public function mount(int $employeeId): void
     {
         $this->employeeId = $employeeId;
+    }
+
+    // ---- Asignar licencia al empleado ----
+    public function openAssignLicense(): void
+    {
+        $this->authorize('licenses.assign');
+        $this->reset('licenseToAssign', 'licenseAssignNotes');
+        $this->resetValidation();
+        $this->assigningLicense = true;
+    }
+
+    public function saveAssignLicense(): void
+    {
+        $this->authorize('licenses.assign');
+        $this->validate(
+            ['licenseToAssign' => ['required', 'integer', 'exists:licenses,id']],
+            [],
+            ['licenseToAssign' => 'licencia'],
+        );
+
+        $result = \Illuminate\Support\Facades\DB::transaction(function () {
+            $license = \App\Models\License::lockForUpdate()->findOrFail($this->licenseToAssign);
+
+            if ($license->availableSeats() <= 0) {
+                return 'full';
+            }
+
+            $exists = \App\Models\LicenseAssignment::where('license_id', $license->id)
+                ->where('assignable_type', \App\Models\Employee::class)
+                ->where('assignable_id', $this->employeeId)
+                ->whereNull('released_at')->exists();
+
+            if ($exists) {
+                return 'dup';
+            }
+
+            \App\Models\LicenseAssignment::create([
+                'license_id' => $license->id,
+                'assignable_type' => \App\Models\Employee::class,
+                'assignable_id' => $this->employeeId,
+                'assigned_at' => now(),
+                'assigned_by' => auth()->id(),
+                'notes' => $this->licenseAssignNotes ?: null,
+            ]);
+
+            return true;
+        });
+
+        if ($result === 'full') {
+            $this->dispatch('toast', type: 'error', message: 'Esa licencia no tiene asientos disponibles.');
+
+            return;
+        }
+        if ($result === 'dup') {
+            $this->addError('licenseToAssign', 'Este empleado ya tiene un asiento activo de esa licencia.');
+
+            return;
+        }
+
+        $this->assigningLicense = false;
+        $this->dispatch('toast', type: 'success', message: 'Licencia asignada al empleado.');
     }
 
     public function getEmployeeProperty(): Employee
@@ -58,6 +126,7 @@ class EmployeeDetail extends Component
             'accounts',
             'assignments.asset.type', 'assignments.responsiveLetter',
             'responsiveLetters.items.type',
+            'licenseAssignments.license',
         ])->findOrFail($this->employeeId);
     }
 
@@ -242,12 +311,23 @@ class EmployeeDetail extends Component
     {
         $employee = $this->employee;
 
+        // Solo se consulta cuando el modal está abierto (evita trabajo por render).
+        $availableLicenses = $this->assigningLicense
+            ? \App\Models\License::withCount(['activeAssignments'])
+                ->orderBy('software_name')->get()
+                ->filter(fn ($l) => $l->seats - $l->active_assignments_count > 0)
+                ->mapWithKeys(fn ($l) => [
+                    $l->id => trim("{$l->software_name} {$l->version}").' · '.($l->seats - $l->active_assignments_count).' libre(s)',
+                ])
+            : collect();
+
         return view('livewire.admin.employees.employee-detail', [
             'employee' => $employee,
             'activities' => $employee->activities()->with('causer')->latest()->limit(50)->get(),
             'accountTypes' => EmployeeAccount::TYPES,
             'accountStatuses' => EmployeeAccount::STATUSES,
             'roles' => Role::orderBy('name')->pluck('name'),
+            'availableLicenses' => $availableLicenses,
         ]);
     }
 }

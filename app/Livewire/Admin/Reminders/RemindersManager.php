@@ -36,7 +36,7 @@ class RemindersManager extends Component
         $this->data = [
             'title' => null, 'body' => null,
             'starts_at' => now()->format('Y-m-d\TH:i'),
-            'ends_at' => null, 'visibility' => 'private',
+            'ends_at' => null, 'visibility' => 'private', 'recurrence' => 'none',
         ];
 
         if ($id) {
@@ -47,6 +47,7 @@ class RemindersManager extends Component
                 'starts_at' => $r->starts_at?->format('Y-m-d\TH:i'),
                 'ends_at' => $r->ends_at?->format('Y-m-d\TH:i'),
                 'visibility' => $r->visibility,
+                'recurrence' => $r->recurrence ?? 'none',
             ];
         }
 
@@ -63,11 +64,13 @@ class RemindersManager extends Component
             'data.starts_at' => ['required', 'date'],
             'data.ends_at' => ['nullable', 'date', 'after_or_equal:data.starts_at'],
             'data.visibility' => ['required', 'in:private,public'],
+            'data.recurrence' => ['required', 'in:none,hourly,daily,weekly,monthly,yearly'],
         ], [
             'data.ends_at.after_or_equal' => 'La fecha fin no puede ser anterior al inicio.',
         ], [
             'data.title' => 'título', 'data.starts_at' => 'fecha de inicio',
             'data.ends_at' => 'fecha de fin', 'data.visibility' => 'visibilidad',
+            'data.recurrence' => 'repetición',
         ])['data'];
 
         if ($this->editingId) {

@@ -9,8 +9,8 @@
 
             <div>
                 <label class="form-label">Activo afectado <span class="text-error">*</span></label>
-                <x-searchable-select model="data.asset_id" :options="$assets"
-                    placeholder="— Seleccionar activo —" searchPlaceholder="Buscar por etiqueta o nombre…" />
+                <x-searchable-select model="assetId" :options="$assets"
+                    placeholder="— Seleccionar activo —" searchPlaceholder="Buscar por etiqueta, nombre o serie…" />
                 @error('data.asset_id') <p class="form-error">{{ $message }}</p> @enderror
             </div>
 

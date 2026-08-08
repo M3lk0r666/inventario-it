@@ -39,6 +39,13 @@ class AssetDetail extends Component
     // Baja
     public bool $confirmingRetire = false;
 
+    // Asignar licencia a este equipo
+    public bool $assigningLicense = false;
+
+    public ?int $licenseToAssign = null;
+
+    public string $licenseAssignNotes = '';
+
     public function mount(int $assetId): void
     {
         $this->assetId = $assetId;
@@ -195,15 +202,87 @@ class AssetDetail extends Component
         // Re-render tras editar en el slide-over.
     }
 
+    // ---- Asignar licencia al equipo ----
+    public function openAssignLicense(): void
+    {
+        $this->authorize('licenses.assign');
+        $this->reset('licenseToAssign', 'licenseAssignNotes');
+        $this->resetValidation();
+        $this->assigningLicense = true;
+    }
+
+    public function saveAssignLicense(): void
+    {
+        $this->authorize('licenses.assign');
+        $this->validate(
+            ['licenseToAssign' => ['required', 'integer', 'exists:licenses,id']],
+            [],
+            ['licenseToAssign' => 'licencia'],
+        );
+
+        $result = \Illuminate\Support\Facades\DB::transaction(function () {
+            $license = \App\Models\License::lockForUpdate()->findOrFail($this->licenseToAssign);
+
+            if ($license->availableSeats() <= 0) {
+                return 'full';
+            }
+
+            $exists = \App\Models\LicenseAssignment::where('license_id', $license->id)
+                ->where('assignable_type', Asset::class)
+                ->where('assignable_id', $this->assetId)
+                ->whereNull('released_at')->exists();
+
+            if ($exists) {
+                return 'dup';
+            }
+
+            \App\Models\LicenseAssignment::create([
+                'license_id' => $license->id,
+                'assignable_type' => Asset::class,
+                'assignable_id' => $this->assetId,
+                'assigned_at' => now(),
+                'assigned_by' => auth()->id(),
+                'notes' => $this->licenseAssignNotes ?: null,
+            ]);
+
+            return true;
+        });
+
+        if ($result === 'full') {
+            $this->dispatch('toast', type: 'error', message: 'Esa licencia no tiene asientos disponibles.');
+
+            return;
+        }
+        if ($result === 'dup') {
+            $this->addError('licenseToAssign', 'Este equipo ya tiene un asiento activo de esa licencia.');
+
+            return;
+        }
+
+        $this->assigningLicense = false;
+        $this->dispatch('toast', type: 'success', message: 'Licencia asignada al equipo.');
+    }
+
     public function render()
     {
         $asset = $this->asset;
+
+        // Licencias con asientos disponibles (solo al abrir el modal de asignación)
+        $availableLicenses = $this->assigningLicense
+            ? \App\Models\License::withCount(['activeAssignments'])
+                ->orderBy('software_name')->get()
+                ->filter(fn ($l) => $l->seats - $l->active_assignments_count > 0)
+                ->mapWithKeys(fn ($l) => [
+                    $l->id => trim("{$l->software_name} {$l->version}").' · '.($l->seats - $l->active_assignments_count).' libre(s)',
+                ])
+            : collect();
 
         return view('livewire.admin.assets.asset-detail', [
             'asset' => $asset,
             'statuses' => CatalogRegistry::options('estados-de-activo'),
             'activities' => $asset->activities()->with('causer')->latest()->limit(50)->get(),
             'chipByColor' => AssetsTable::CHIP_BY_COLOR,
+            'availableLicenses' => $availableLicenses,
         ]);
     }
 }

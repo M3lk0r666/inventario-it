@@ -11,8 +11,17 @@ class Reminder extends Model
 {
     use SoftDeletes;
 
+    public const RECURRENCES = [
+        'none' => 'No se repite',
+        'hourly' => 'Cada hora',
+        'daily' => 'Cada día',
+        'weekly' => 'Cada semana',
+        'monthly' => 'Cada mes',
+        'yearly' => 'Cada año',
+    ];
+
     protected $fillable = [
-        'title', 'body', 'starts_at', 'ends_at', 'visibility', 'user_id',
+        'title', 'body', 'starts_at', 'ends_at', 'visibility', 'recurrence', 'user_id',
     ];
 
     protected function casts(): array
@@ -21,6 +30,24 @@ class Reminder extends Model
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
         ];
+    }
+
+    /** Avanza una fecha a la siguiente ocurrencia según la recurrencia. */
+    public function advance(\Illuminate\Support\Carbon $date): \Illuminate\Support\Carbon
+    {
+        return match ($this->recurrence) {
+            'hourly' => $date->copy()->addHour(),
+            'daily' => $date->copy()->addDay(),
+            'weekly' => $date->copy()->addWeek(),
+            'monthly' => $date->copy()->addMonthNoOverflow(),
+            'yearly' => $date->copy()->addYear(),
+            default => $date,
+        };
+    }
+
+    public function isRecurring(): bool
+    {
+        return $this->recurrence && $this->recurrence !== 'none';
     }
 
     public function user(): BelongsTo

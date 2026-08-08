@@ -136,6 +136,21 @@ Correcciones en `deploy.sh`: ejecuta `git config core.fileMode false` (ignora ca
 3. **Especificaciones (JSON) de tipos de activo**: la ayuda y un `placeholder` explican el formato (arreglo de objetos `{key, label, type}`, type = text|number) con ejemplo. Se capturan aquí los campos dinámicos que luego aparecen al **dar de alta un activo** de ese tipo y en su **pestaña Especificaciones**.
 5. **PDFs estandarizados a azul**: la carta responsiva usaba el naranja NETJER `#E87722` (regla superior, borde de títulos, nombre de empresa) → cambiado a `#003d9b` (mismo azul que el reporte). **Requiere `npm run build` + `view:clear`.**
 
+### Tipo de asignación: préstamo temporal (2026-08-04)
+Migración `..._000100_add_type_to_assignments` → `assignments.assignment_type` (permanent|loan) + `expected_return_at`. Modelo `Assignment::TYPES` + `isLoan()`. En `AssignmentForm`: select "Tipo de asignación" (Definitiva / Préstamo temporal) con fecha estimada obligatoria si es préstamo (`assignmentType`/`expectedReturnAt`), guardado en create y en corrección (saveEdit), y cargado en openEdit. **Badge "Préstamo"** (chip-warning con fecha en tooltip) en la tabla de Asignaciones (columna Tipo) y en la ficha del empleado (Activos asignados). Solo dentro del sistema (no en la carta). Para volverlo definitivo: Corregir la asignación y cambiar el tipo. **Requiere `php artisan migrate` + `view:clear`.**
+
+### Lote de pruebas final (2026-08-03)
+1. **Ubicación al asignar**: `AssignmentForm` tiene select "Ubicación destino" (`newLocationId`, default = ubicación del empleado vía `updatedEmployeeId`); al asignar/corregir mueve los activos a esa ubicación.
+2. **Ubicación al recibir**: `ReceptionForm` tiene select "Ubicación destino" (`returnLocationId`, default = Location con nombre "almac…"); al recibir regresa los activos a esa ubicación.
+3. **Fix reporte de problema**: el activo afectado usaba clave anidada `data.asset_id` (@entangle no sincronizaba) → se pasó a propiedad de primer nivel `assetId` en `ProblemForm` (se copia a `data.asset_id` en save). Ya no marca "obligatorio" con activo seleccionado.
+4. **Búsqueda por serie** en el activo del problema: las opciones incluyen `S/N: …`.
+5. **Columna No. de serie** en la tabla de Asignaciones (después de Activo).
+6. **Licencias del empleado**: nueva pestaña "Licencias" en la ficha del empleado (`licenseAssignments.license`) con botón **"+Asignar licencia"** (modal, `openAssignLicense`/`saveAssignLicense` en `EmployeeDetail`, respeta asientos y evita duplicado), igual que en el detalle de activo.
+7. **Liberar asiento de licencia**: se cambió el `wire:confirm` del navegador por modal Tailwind (`confirmingReleaseId`).
+8. **Asignar licencia desde detalle de activo**: botón operativo (antes deshabilitado "Fase 6") → modal con licencias que tienen asientos libres, respeta límite y evita duplicado (`openAssignLicense`/`saveAssignLicense`).
+9. **Recordatorios recurrentes**: columna `recurrence` (migración) + select "Repetir" (none/hourly/daily/weekly/monthly/yearly). Comando `reminders:roll` (schedule hourly) avanza los vencidos a su siguiente ocurrencia (`Reminder::advance()`). Chip de recurrencia en la lista. **Requiere `php artisan migrate` + `view:clear`.**
+10. **Nota del activo sin duplicar**: se eliminó el campo "Notas" del alta/edición de activo (`AssetForm` data/rules/atributos + textarea) y el bloque "Comentarios del alta" del detalle. Las notas del activo quedan solo en la sección "Notas" del detalle (`deviceNotes`). La columna `notes` sigue en BD pero ya no se usa desde el form.
+
 ### Plantillas de cartas: nota al pie + HTML + ancho (2026-08-03)
 - La página **Plantillas de cartas** usa ancho completo (card sin `max-w`, CAB/CEB en 2 columnas en pantallas grandes).
 - **Nota al pie editable** por tipo: settings `letter_delivery_note` / `letter_return_note` (defaults en `ResponsiveLetterService::DEFAULT_NOTE`). Se editan en la página; el PDF la toma vía `noteText` (reemplaza el texto antes fijo "Nota: Los activos...").

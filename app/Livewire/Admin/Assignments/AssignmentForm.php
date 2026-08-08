@@ -35,6 +35,15 @@ class AssignmentForm extends Component
 
     public string $condition = 'Bueno';
 
+    /** Tipo de asignación: permanent (definitiva) | loan (préstamo temporal). */
+    public string $assignmentType = 'permanent';
+
+    /** Fecha estimada de devolución (solo préstamos). */
+    public ?string $expectedReturnAt = null;
+
+    /** Ubicación destino de los activos al asignarlos (por defecto la del empleado). */
+    public ?int $newLocationId = null;
+
     public string $notes = '';
 
     public bool $generateLetter = true;
@@ -62,7 +71,7 @@ class AssignmentForm extends Component
     {
         $this->authorize('assignments.create');
         $this->resetValidation();
-        $this->reset('employeeId', 'notes', 'assetSearch', 'selectedAssets', 'additionalChecked', 'additionalValues', 'editingLetterId');
+        $this->reset('employeeId', 'notes', 'assetSearch', 'selectedAssets', 'additionalChecked', 'additionalValues', 'editingLetterId', 'newLocationId', 'assignmentType', 'expectedReturnAt');
         $this->assignedAt = now()->format('Y-m-d');
         $this->condition = 'Bueno';
         $this->generateLetter = auth()->user()->can('responsive_letters.create');
@@ -96,8 +105,12 @@ class AssignmentForm extends Component
 
         $this->editingLetterId = $letter->id;
         $this->employeeId = $letter->employee_id;
+        $this->newLocationId = Employee::whereKey($letter->employee_id)->value('location_id');
         $this->assignedAt = $letter->issued_at?->format('Y-m-d') ?? now()->format('Y-m-d');
-        $this->condition = $letter->assignments->first()?->condition_on_assign ?? 'Bueno';
+        $first = $letter->assignments->first();
+        $this->condition = $first?->condition_on_assign ?? 'Bueno';
+        $this->assignmentType = $first?->assignment_type ?? 'permanent';
+        $this->expectedReturnAt = $first?->expected_return_at?->format('Y-m-d');
         $this->notes = $letter->notes ?? '';
         $this->selectedAssets = $letter->assignments->pluck('asset_id')->map(fn ($id) => (int) $id)->all();
 
@@ -133,6 +146,14 @@ class AssignmentForm extends Component
         $this->selectedAssets = array_values(array_diff($this->selectedAssets, [$assetId]));
     }
 
+    /** Al elegir empleado, sugerir su ubicación como destino de los activos. */
+    public function updatedEmployeeId(): void
+    {
+        if ($this->employeeId) {
+            $this->newLocationId = Employee::whereKey($this->employeeId)->value('location_id');
+        }
+    }
+
     public function save(ResponsiveLetterService $letters): void
     {
         if ($this->editingLetterId) {
@@ -150,13 +171,17 @@ class AssignmentForm extends Component
             'notes' => ['nullable', 'string', 'max:1000'],
             'selectedAssets' => ['required', 'array', 'min:1'],
             'selectedAssets.*' => ['integer', 'exists:assets,id'],
+            'assignmentType' => ['required', 'in:permanent,loan'],
+            'expectedReturnAt' => ['nullable', 'date', 'required_if:assignmentType,loan'],
         ], [
             'selectedAssets.required' => 'Selecciona al menos un activo.',
             'selectedAssets.min' => 'Selecciona al menos un activo.',
+            'expectedReturnAt.required_if' => 'Indica la fecha estimada de devolución del préstamo.',
         ], [
             'employeeId' => 'empleado',
             'assignedAt' => 'fecha de entrega',
             'condition' => 'estado físico',
+            'expectedReturnAt' => 'fecha estimada de devolución',
         ]);
 
         // Revalidar disponibilidad de todos los activos
@@ -204,12 +229,21 @@ class AssignmentForm extends Component
                     'responsive_letter_id' => $letter?->id,
                     'assigned_at' => $this->assignedAt,
                     'condition_on_assign' => $this->condition,
+                    'assignment_type' => $this->assignmentType,
+                    'expected_return_at' => $this->assignmentType === 'loan' ? $this->expectedReturnAt : null,
                     'assigned_by' => auth()->id(),
                     'notes' => $this->notes ?: null,
                 ]);
 
+                $assetUpdate = [];
                 if ($assignedStatusId) {
-                    Asset::whereKey($assetId)->first()?->update(['asset_status_id' => $assignedStatusId]);
+                    $assetUpdate['asset_status_id'] = $assignedStatusId;
+                }
+                if ($this->newLocationId) {
+                    $assetUpdate['location_id'] = $this->newLocationId;
+                }
+                if ($assetUpdate) {
+                    Asset::whereKey($assetId)->update($assetUpdate);
                 }
             }
 
@@ -322,14 +356,19 @@ class AssignmentForm extends Component
                 $current[$assetId]?->delete();
             }
 
-            // Activos conservados: actualizar empleado/fecha/estado físico/notas
+            // Activos conservados: actualizar empleado/fecha/estado físico/notas (+ ubicación si se indicó)
             foreach ($toKeep as $assetId) {
                 $current[$assetId]?->update([
                     'employee_id' => $this->employeeId,
                     'assigned_at' => $this->assignedAt,
                     'condition_on_assign' => $this->condition,
+                    'assignment_type' => $this->assignmentType,
+                    'expected_return_at' => $this->assignmentType === 'loan' ? $this->expectedReturnAt : null,
                     'notes' => $this->notes ?: null,
                 ]);
+                if ($this->newLocationId) {
+                    Asset::whereKey($assetId)->update(['location_id' => $this->newLocationId]);
+                }
             }
 
             // Activos nuevos: crear asignación y marcarlos asignados
@@ -340,11 +379,20 @@ class AssignmentForm extends Component
                     'responsive_letter_id' => $letter->id,
                     'assigned_at' => $this->assignedAt,
                     'condition_on_assign' => $this->condition,
+                    'assignment_type' => $this->assignmentType,
+                    'expected_return_at' => $this->assignmentType === 'loan' ? $this->expectedReturnAt : null,
                     'assigned_by' => auth()->id(),
                     'notes' => $this->notes ?: null,
                 ]);
+                $assetUpdate = [];
                 if ($assignedStatusId) {
-                    Asset::whereKey($assetId)->first()?->update(['asset_status_id' => $assignedStatusId]);
+                    $assetUpdate['asset_status_id'] = $assignedStatusId;
+                }
+                if ($this->newLocationId) {
+                    $assetUpdate['location_id'] = $this->newLocationId;
+                }
+                if ($assetUpdate) {
+                    Asset::whereKey($assetId)->update($assetUpdate);
                 }
             }
         });
@@ -454,6 +502,7 @@ class AssignmentForm extends Component
             'selected' => Asset::with(['type'])->whereIn('id', $this->selectedAssets)->orderBy('asset_tag')->get(),
             'conditions' => self::CONDITIONS,
             'additionalTypes' => AdditionalItemType::where('is_active', true)->orderBy('name')->get(),
+            'locations' => \App\Support\CatalogRegistry::options('ubicaciones'),
             'mailReady' => MailConfigurator::isReady(),
             'employeeEmail' => $selectedEmployee?->email,
             'manager' => $selectedEmployee?->manager,

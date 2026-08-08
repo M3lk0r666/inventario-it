@@ -27,6 +27,41 @@
                 </div>
             </div>
 
+            <div>
+                <label class="form-label">Ubicación destino de los activos</label>
+                <select wire:model="newLocationId" class="form-input">
+                    <option value="">— No cambiar la ubicación —</option>
+                    @foreach ($locations as $value => $label)
+                        <option value="{{ $value }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+                <p class="form-help">Al asignar, los activos se mueven a esta ubicación (por defecto, la del empleado).</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label">Tipo de asignación <span class="text-error">*</span></label>
+                    <select wire:model.live="assignmentType" class="form-input">
+                        @foreach (\App\Models\Assignment::TYPES as $value => $label)
+                            <option value="{{ $value }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    @error('assignmentType') <p class="form-error">{{ $message }}</p> @enderror
+                </div>
+                @if ($assignmentType === 'loan')
+                    <div>
+                        <label class="form-label">Devolución estimada <span class="text-error">*</span></label>
+                        <input type="date" wire:model="expectedReturnAt" class="form-input">
+                        @error('expectedReturnAt') <p class="form-error">{{ $message }}</p> @enderror
+                    </div>
+                @endif
+            </div>
+            @if ($assignmentType === 'loan')
+                <div class="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-body-sm text-amber-800">
+                    <i class="ri-time-line mr-1"></i> Préstamo temporal: el equipo se marca como prestado. Si más adelante se vuelve definitivo, edita la asignación (Corregir) y cambia el tipo a "Definitiva".
+                </div>
+            @endif
+
             {{-- Selector de activos --}}
             <div class="border border-border-soft rounded-lg p-4">
                 <label class="form-label">Activos a entregar <span class="text-error">*</span></label>

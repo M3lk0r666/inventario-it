@@ -25,6 +25,17 @@
                 </div>
             </div>
 
+            <div>
+                <label class="form-label">Ubicación destino de los activos</label>
+                <select wire:model="returnLocationId" class="form-input">
+                    <option value="">— No cambiar la ubicación —</option>
+                    @foreach ($locations as $value => $label)
+                        <option value="{{ $value }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+                <p class="form-help">Al recibir, los activos regresan a esta ubicación (por defecto, Almacén).</p>
+            </div>
+
             {{-- Activos asignados del empleado --}}
             <div class="border border-border-soft rounded-lg p-4">
                 <label class="form-label">Activos a recibir <span class="text-error">*</span></label>

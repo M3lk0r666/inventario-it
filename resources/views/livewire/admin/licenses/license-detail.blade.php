@@ -120,8 +120,7 @@
                             <td class="px-4 py-3 text-right">
                                 @if (! $a->released_at)
                                     @can('licenses.assign')
-                                        <button type="button" wire:click="release({{ $a->id }})"
-                                            wire:confirm="¿Liberar este asiento?"
+                                        <button type="button" wire:click="confirmRelease({{ $a->id }})"
                                             class="p-1.5 text-outline rounded-lg hover:text-alert hover:bg-alert/10" title="Liberar asiento">
                                             <i class="ri-logout-box-r-line text-base"></i>
                                         </button>
@@ -198,6 +197,30 @@
                 <div class="mt-5 flex justify-end gap-2">
                     <button type="button" class="btn-ghost" wire:click="$set('assigning', false)">Cancelar</button>
                     <button type="button" class="btn-primary" wire:click="saveAssign" wire:loading.attr="disabled">Asignar</button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Confirmar liberación de asiento --}}
+    @if ($confirmingReleaseId)
+        <div class="fixed inset-0 z-[60] flex items-center justify-center">
+            <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" wire:click="$set('confirmingReleaseId', null)"></div>
+            <div class="relative bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-border-soft w-full max-w-md mx-4 p-6">
+                <div class="flex items-start gap-3">
+                    <div class="shrink-0 w-10 h-10 rounded-full bg-error-container flex items-center justify-center">
+                        <i class="ri-logout-box-r-line text-on-error-container text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-title-md text-on-surface">Liberar asiento</h3>
+                        <p class="mt-1 text-body-md text-on-surface-variant">
+                            ¿Liberar este asiento de la licencia? El destinatario dejará de tenerlo asignado y el asiento quedará disponible.
+                        </p>
+                    </div>
+                </div>
+                <div class="mt-5 flex justify-end gap-2">
+                    <button type="button" class="btn-ghost" wire:click="$set('confirmingReleaseId', null)">Cancelar</button>
+                    <button type="button" class="btn-danger" wire:click="release" wire:loading.attr="disabled">Liberar</button>
                 </div>
             </div>
         </div>

@@ -142,11 +142,6 @@
                 </div>
             @endif
 
-            <div>
-                <label class="form-label">Notas</label>
-                <textarea wire:model="data.notes" rows="2" class="form-input"></textarea>
-            </div>
-
             {{-- Imágenes --}}
             <div class="border border-border-soft rounded-lg p-4">
                 <h4 class="text-label-md text-on-surface-variant uppercase tracking-wider mb-3">Imágenes</h4>
